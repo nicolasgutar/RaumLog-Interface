@@ -9,7 +9,7 @@ const slides = [
     alt: "Garaje organizado con estantes, bicicleta y cajas etiquetadas",
   },
   {
-    image: "/storage-utility-room.jpg",
+    image: "/storage-utility-room.png",
     caption: "Un Cuarto Útil",
     alt: "Cuarto útil limpio y organizado con estantes y almacenamiento",
   },
@@ -20,7 +20,7 @@ const slides = [
   },
   {
     image: "/storage-business.png",
-    caption: "Tu Espacio Empresarial",
+    caption: "Ese Espacio Vacío de la Empresa",
     alt: "Espacio de almacenamiento empresarial profesional con estantes disponibles",
   },
 ];
