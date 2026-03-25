@@ -40,19 +40,19 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 bg-[#2C5E8D] ${
-          scrolled ? "shadow-lg" : ""
+        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 bg-white ${
+          scrolled ? "shadow-md" : "shadow-sm"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 md:h-24">
-            {/* Logo — white version via brightness-0 invert */}
+            {/* Logo */}
             <div className="flex-shrink-0 w-[40%] md:w-[35%]">
               <Link to="/" className="flex items-center">
                 <img
-                  src="/raumlog-logo.png"
+                  src="/raumlog-logo-color.png"
                   alt="RaumLog"
-                  className="h-16 md:h-20 w-auto object-contain brightness-0 invert"
+                  className="h-16 md:h-20 w-auto object-contain"
                 />
               </Link>
             </div>
@@ -65,8 +65,8 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
                   to={link.to}
                   className={`text-sm font-semibold transition-colors whitespace-nowrap ${
                     location.pathname === link.to
-                      ? "text-white border-b-2 border-white pb-0.5"
-                      : "text-[#AECBE9] hover:text-white"
+                      ? "text-[#2C5E8D] border-b-2 border-[#2C5E8D] pb-0.5"
+                      : "text-[#2C5E8D] hover:text-[#1a3d5c]"
                   }`}
                 >
                   {link.label}
@@ -76,7 +76,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
 
             {/* Right side */}
             <div className="flex items-center justify-end gap-3 w-[20%]">
-              <Link to="/mi-cuenta" className="relative p-2 text-[#AECBE9] hover:text-white transition-colors">
+              <Link to="/mi-cuenta" className="relative p-2 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors">
                 <ShoppingCart className="w-6 h-6" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
@@ -87,7 +87,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
 
               {/* Mobile hamburger */}
               <button
-                className="md:hidden p-2 text-[#AECBE9] hover:text-white transition-colors"
+                className="md:hidden p-2 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
                 onClick={() => setMenuOpen(true)}
                 aria-label="Abrir menú"
               >
@@ -100,17 +100,17 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
 
       {/* Mobile full-screen overlay */}
       {menuOpen && (
-        <div className="fixed inset-0 z-[100] bg-[#2C5E8D] flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 h-20">
             <Link to="/" className="flex items-center" onClick={() => setMenuOpen(false)}>
               <img
-                src="/raumlog-logo.png"
+                src="/raumlog-logo-color.png"
                 alt="RaumLog"
-                className="h-16 w-auto object-contain brightness-0 invert"
+                className="h-16 w-auto object-contain"
               />
             </Link>
             <button
-              className="p-2 text-[#AECBE9] hover:text-white"
+              className="p-2 text-[#2C5E8D] hover:text-[#1a3d5c]"
               onClick={() => setMenuOpen(false)}
               aria-label="Cerrar menú"
             >
@@ -122,7 +122,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
               <Link
                 key={link.to}
                 to={link.to}
-                className="text-2xl font-semibold text-white hover:text-[#AECBE9] transition-colors"
+                className="text-2xl font-semibold text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
                 onClick={() => setMenuOpen(false)}
               >
                 {link.label}
@@ -130,7 +130,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
             ))}
             <Link
               to="/mi-cuenta"
-              className="text-2xl font-semibold text-white hover:text-[#AECBE9] transition-colors"
+              className="text-2xl font-semibold text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               Mi Cuenta

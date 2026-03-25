@@ -8,11 +8,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Logo */}
           <div className="flex flex-col items-center md:items-start">
-            <img
-              src="/raumlog-logo.png"
-              alt="RaumLog"
-              className="h-20 w-auto object-contain brightness-0 invert mb-3"
-            />
+            <div className="bg-white rounded-xl p-2 mb-3 inline-block">
+              <img
+                src="/raumlog-logo-color.png"
+                alt="RaumLog"
+                className="h-16 w-auto object-contain"
+              />
+            </div>
             <p className="text-[#AECBE9] text-sm text-center md:text-left max-w-xs">
               Conectamos espacios disponibles con personas que los necesitan.
             </p>
