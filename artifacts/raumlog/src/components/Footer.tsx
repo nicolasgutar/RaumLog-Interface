@@ -11,7 +11,7 @@ export default function Footer() {
             <img
               src="/raumlog-logo.png"
               alt="RaumLog"
-              className="h-14 w-auto object-contain brightness-0 invert mb-3"
+              className="h-20 w-auto object-contain brightness-0 invert mb-3"
             />
             <p className="text-[#AECBE9] text-sm text-center md:text-left max-w-xs">
               Conectamos espacios disponibles con personas que los necesitan.

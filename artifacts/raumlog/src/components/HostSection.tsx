@@ -4,19 +4,19 @@ import { Link } from "react-router-dom";
 
 const slides = [
   {
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    caption: "El Deposito Olvidado",
-    alt: "Bodega con cajas y estantes",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80",
-    caption: "Una Habitación Vacía",
-    alt: "Habitación vacía con cama",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1558618047-3d9b42c24b5d?w=800&q=80",
+    image: "/storage-garage.png",
     caption: "Tu Garaje",
-    alt: "Garaje disponible para almacenamiento",
+    alt: "Garaje organizado con estantes, bicicleta y cajas etiquetadas",
+  },
+  {
+    image: "/storage-organized.png",
+    caption: "Un Cuarto Ordenado",
+    alt: "Cuarto de almacenamiento moderno con cajas organizadas en estantes",
+  },
+  {
+    image: "/storage-room.png",
+    caption: "El Deposito Olvidado",
+    alt: "Habitación con cajas de mudanza y artículos almacenados",
   },
 ];
 
