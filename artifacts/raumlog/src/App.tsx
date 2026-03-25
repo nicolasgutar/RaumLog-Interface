@@ -6,6 +6,7 @@ import OfferSpace from "@/pages/OfferSpace";
 import Contact from "@/pages/Contact";
 import MyAccount from "@/pages/MyAccount";
 import NotFound from "@/pages/not-found";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -14,6 +15,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter basename={base}>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/encuentra-tu-espacio" element={<FindSpace />} />

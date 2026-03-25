@@ -24,7 +24,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold text-[#2C5E8D]">Email</p>
-                    <a href="mailto:info@raumlog.com" className="text-[#2C5E8D]/70 hover:text-[#2C5E8D] transition-colors">info@raumlog.com</a>
+                    <a href="mailto:contacto@raumlog.com" className="text-[#2C5E8D]/70 hover:text-[#2C5E8D] transition-colors">contacto@raumlog.com</a>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -33,7 +33,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold text-[#2C5E8D]">Teléfono</p>
-                    <a href="tel:+34000000000" className="text-[#2C5E8D]/70 hover:text-[#2C5E8D] transition-colors">+34 000 000 000</a>
+                    <a href="tel:+573054162141" className="text-[#2C5E8D]/70 hover:text-[#2C5E8D] transition-colors">+57 305 416 2141</a>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
@@ -42,7 +42,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold text-[#2C5E8D]">Ubicación</p>
-                    <p className="text-[#2C5E8D]/70">Madrid, España</p>
+                    <p className="text-[#2C5E8D]/70">Medellín, Colombia</p>
                   </div>
                 </div>
               </div>
