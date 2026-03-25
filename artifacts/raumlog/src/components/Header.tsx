@@ -52,7 +52,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
                 <img
                   src="/raumlog-logo-main.png"
                   alt="RaumLog"
-                  className="h-20 md:h-28 w-auto object-contain"
+                  className="h-20 md:h-28 w-auto object-contain scale-125 origin-left"
                 />
               </Link>
             </div>

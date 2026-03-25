@@ -11,7 +11,7 @@ export default function Footer() {
             <img
               src="/raumlog-logo-main.png"
               alt="RaumLog"
-              className="h-24 w-auto object-contain mb-3"
+              className="h-32 w-auto object-contain mb-3"
               style={{ filter: "brightness(0) invert(1)" }}
             />
             <p className="text-[#AECBE9] text-sm text-center md:text-left max-w-xs">
