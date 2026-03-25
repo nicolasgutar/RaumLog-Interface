@@ -244,7 +244,7 @@ export default function FindSpace() {
               Encuentra tu espacio
             </h1>
             <p className="text-[#AECBE9] text-lg mb-8">
-              Espacios disponibles en Medellín y el Área Metropolitana
+              Disponible en Medellín, Bogotá y sus alrededores
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
               <div className="flex-1 flex items-center bg-white rounded-lg px-4 gap-2">
