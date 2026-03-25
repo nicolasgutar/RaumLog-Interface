@@ -9,14 +9,19 @@ const slides = [
     alt: "Garaje organizado con estantes, bicicleta y cajas etiquetadas",
   },
   {
-    image: "/storage-organized.png",
-    caption: "Un Cuarto Ordenado",
-    alt: "Cuarto de almacenamiento moderno con cajas organizadas en estantes",
+    image: "/storage-utility-room.jpg",
+    caption: "Un Cuarto Útil",
+    alt: "Cuarto útil limpio y organizado con estantes y almacenamiento",
   },
   {
     image: "/storage-room.png",
-    caption: "El Deposito Olvidado",
+    caption: "Una Habitación Vacía",
     alt: "Habitación con cajas de mudanza y artículos almacenados",
+  },
+  {
+    image: "/storage-business.png",
+    caption: "Tu Espacio Empresarial",
+    alt: "Espacio de almacenamiento empresarial profesional con estantes disponibles",
   },
 ];
 
