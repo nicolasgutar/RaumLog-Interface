@@ -11,7 +11,8 @@ export default function Footer() {
             <img
               src="/raumlog-logo-main.png"
               alt="RaumLog"
-              className="h-24 w-auto object-contain mb-3 mix-blend-screen"
+              className="h-24 w-auto object-contain mb-3"
+              style={{ filter: "brightness(2.2)" }}
             />
             <p className="text-[#AECBE9] text-sm text-center md:text-left max-w-xs">
               Conectamos espacios disponibles con personas que los necesitan.
