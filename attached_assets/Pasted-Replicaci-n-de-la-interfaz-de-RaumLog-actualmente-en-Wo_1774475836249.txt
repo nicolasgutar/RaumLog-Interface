@@ -1,0 +1,54 @@
+Replicación de la interfaz de RaumLog (actualmente en WordPress) a un Stack moderno: React + Vite + Tailwind CSS + Lucide React (iconos). El objetivo es un MVP técnico limpio y listo para integración de Backend.
+
+1. Especificaciones de Diseño (Design Tokens):
+
+Paleta de Colores:
+
+Primary (Brand): #2C5E8D (Azul Principal)
+
+Secondary: #AECBE9 (Azul Claro)
+
+Background/Cards: #FFFFF (Blanco) y #D8CFC3 (Arena/Grisáceo)
+
+Tipografía:
+
+Headings (h1, h2, h3): Franklin Gothic Demi Cond, sans-serif.
+
+Body/UI: Microsoft New Tai Lue, sans-serif.
+
+Nota: Si no están disponibles en Google Fonts, usa alternativas similares de sistema (Impact o Arial Narrow para títulos / Segoe UI para cuerpo).
+
+2. Definición de Componentes (Módulos):
+
+Módulo A: Header Global (Sticky)
+
+Desktop: Logo a la izquierda (40% width), Menú de navegación centrado (40% width), Carrito de compras a la derecha (20% width).
+
+Mobile: Logo izquierda, Carrito derecha, Menú Hamburguesa central. Al abrir el menú, debe ser un Full-screen Overlay con los links centrados.
+
+Comportamiento: El logo debe mantener un aspecto de ratio fijo. El carrito debe mostrar un badge rojo para el contador de items.
+
+Módulo B: Hero Section (Sección Principal)
+
+Layout: Fondo con imagen de bodega/espacio (proporcionada en assets) con un overlay oscuro sutil para legibilidad.
+
+Contenido: Título H1 alineado según captura, Subtítulo descriptivo y 2 Botones Call-to-Action (CTA).
+
+CTAs: Botón 1: "Almacena con RaumLog" (Primary Color). Botón 2: "Gana con RaumLog" (Ghost/Outline style).
+
+Módulo C: Lógica de Navegación (Routing)
+
+Implementar react-router-dom para las rutas: / (Home), /encuentra-tu-espacio, /ofrece-tu-espacio, /contacto, /mi-cuenta.
+
+3. Reglas de Desarrollo (The Spec):
+
+Componentes Funcionales: Usa componentes de función con Hooks (useState, useEffect).
+
+Tailwind Moderno: Usa clases utilitarias de Tailwind. No escribas CSS personalizado a menos que sea estrictamente necesario para las fuentes específicas.
+
+Accesibilidad (a11y): Uso de etiquetas semánticas (<header>, <main>, <section>, <footer>, <nav>). Atributos alt en todas las imágenes.
+
+Responsividad: Mobile-first approach. El diseño debe ser fluido desde 320px hasta 1440px.
+
+4. Entregable Fase 1:
+Desarrolla el Boilerplate de Vite, la configuración de Tailwind y el Header + Hero Section. Antes de seguir con el resto de la página, despliega la vista previa para validar que los márgenes y la jerarquía visual coinciden al 100% con las capturas de pantalla adjuntas.
