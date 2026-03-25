@@ -9,9 +9,9 @@ export default function Footer() {
           {/* Logo */}
           <div className="flex flex-col items-center md:items-start">
             <img
-              src="/raumlog-logo-dark.png"
+              src="/raumlog-logo-main.png"
               alt="RaumLog"
-              className="h-20 w-auto object-contain mb-3"
+              className="h-24 w-auto object-contain mb-3 mix-blend-screen"
             />
             <p className="text-[#AECBE9] text-sm text-center md:text-left max-w-xs">
               Conectamos espacios disponibles con personas que los necesitan.

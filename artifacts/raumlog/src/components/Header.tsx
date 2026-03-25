@@ -45,14 +45,14 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 md:h-24">
+          <div className="flex items-center justify-between h-24 md:h-28">
             {/* Logo */}
-            <div className="flex-shrink-0 w-[40%] md:w-[35%]">
+            <div className="flex-shrink-0">
               <Link to="/" className="flex items-center">
                 <img
-                  src="/raumlog-logo-color.png"
+                  src="/raumlog-logo-main.png"
                   alt="RaumLog"
-                  className="h-16 md:h-20 w-auto object-contain"
+                  className="h-20 md:h-28 w-auto object-contain"
                 />
               </Link>
             </div>
@@ -104,9 +104,9 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
           <div className="flex items-center justify-between px-4 h-20">
             <Link to="/" className="flex items-center" onClick={() => setMenuOpen(false)}>
               <img
-                src="/raumlog-logo-color.png"
+                src="/raumlog-logo-main.png"
                 alt="RaumLog"
-                className="h-16 w-auto object-contain"
+                className="h-20 w-auto object-contain"
               />
             </Link>
             <button
@@ -140,7 +140,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
       )}
 
       {/* Spacer for sticky header */}
-      <div className="h-20 md:h-24" />
+      <div className="h-24 md:h-28" />
     </>
   );
 }
