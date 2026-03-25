@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ShoppingCart } from "lucide-react";
-
-interface HeaderProps {
-  cartCount?: number;
-}
+import { Menu, X, User } from "lucide-react";
 
 const navLinks = [
   { label: "Inicio", to: "/" },
@@ -13,7 +9,7 @@ const navLinks = [
   { label: "Contacto", to: "/contacto" },
 ];
 
-export default function Header({ cartCount = 0 }: HeaderProps) {
+export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -58,7 +54,7 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
             </div>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex items-center justify-center gap-6 flex-1">
+            <nav className="hidden md:flex items-center justify-end gap-6 flex-1 pr-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
@@ -76,13 +72,9 @@ export default function Header({ cartCount = 0 }: HeaderProps) {
 
             {/* Right side */}
             <div className="flex items-center justify-end gap-3 w-[20%]">
-              <Link to="/mi-cuenta" className="relative p-2 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors">
-                <ShoppingCart className="w-6 h-6" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                    {cartCount}
-                  </span>
-                )}
+              <Link to="/mi-cuenta" className="flex items-center gap-1.5 p-2 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors" aria-label="Mi Cuenta">
+                <User className="w-6 h-6" />
+                <span className="hidden lg:inline text-sm font-semibold">Mi Cuenta</span>
               </Link>
 
               {/* Mobile hamburger */}
