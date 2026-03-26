@@ -112,14 +112,14 @@ export default function AdminFinanzas() {
               sub={`${data.transactionCount} transacción(es)`}
             />
             <StatCard
-              label="IVA (19%) sobre comisión" icon={Receipt} color="yellow"
+              label="IVA recaudado (→ DIAN)" icon={Receipt} color="yellow"
               value={formatCOP(data.ivaOnCommission)}
-              sub="A declarar ante la DIAN"
+              sub="19% adicional sobre precio base"
             />
             <StatCard
-              label="Comisión neta (después IVA)" icon={TrendingUp} color="green"
+              label="Volumen base (sin IVA)" icon={TrendingUp} color="green"
               value={formatCOP(data.netCommissionAfterIva)}
-              sub="Ingreso real de RaumLog"
+              sub="Lo que pagaron por el espacio"
             />
             <StatCard
               label="Volumen total procesado" icon={Users} color="slate"
@@ -136,20 +136,20 @@ export default function AdminFinanzas() {
           </h3>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <p className="text-amber-600 mb-1">Comisión bruta</p>
-              <p className="font-bold text-amber-900 text-lg">{formatCOP(data.totalCommission)}</p>
+              <p className="text-amber-600 mb-1">Volumen total (con IVA)</p>
+              <p className="font-bold text-amber-900 text-lg">{formatCOP(data.totalRevenue)}</p>
             </div>
             <div>
-              <p className="text-amber-600 mb-1">IVA 19%</p>
+              <p className="text-amber-600 mb-1">IVA recaudado (19%)</p>
               <p className="font-bold text-amber-900 text-lg">{formatCOP(data.ivaOnCommission)}</p>
             </div>
             <div>
-              <p className="text-amber-600 mb-1">Base gravable</p>
+              <p className="text-amber-600 mb-1">Precio base (sin IVA)</p>
               <p className="font-bold text-amber-900 text-lg">{formatCOP(data.netCommissionAfterIva)}</p>
             </div>
           </div>
           <p className="text-xs text-amber-600 mt-3">
-            El IVA del 19% aplica sobre la comisión de intermediación de RaumLog. Este valor debe ser declarado y pagado al estado colombiano según el régimen tributario correspondiente.
+            El IVA del 19% aplica sobre el precio base del espacio y es <strong>adicional</strong> al precio listado. Ejemplo: espacio $100 → usuario paga $119 (el IVA de $19 lo recauda RaumLog y lo remite a la DIAN). La comisión de RaumLog (20%) se deduce del precio base, no del IVA.
           </p>
         </section>
 
@@ -237,7 +237,7 @@ export default function AdminFinanzas() {
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {data.recentTransactions.map((tx: any) => {
-                      const iva = Math.round(tx.platformCommission * 0.19);
+                      const iva = tx.totalPrice - tx.platformCommission - tx.hostNetPrice;
                       return (
                         <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-4 py-3 text-gray-400 text-xs">RL-{tx.id}</td>

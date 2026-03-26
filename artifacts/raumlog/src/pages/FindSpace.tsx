@@ -196,11 +196,19 @@ function ContractView({ space, guestName, guestEmail, guestPhone, checkIn, check
           <span className="font-medium">{space.priceMonthly}</span>
         </div>
         <div className="flex justify-between">
+          <span className="text-[#2C5E8D]/70">Precio base del espacio</span>
+          <span className="font-medium">{formatCOP(breakdown.publicTotal)}</span>
+        </div>
+        <div className="flex justify-between">
           <span className="text-[#2C5E8D]/70">Comisión intermediación RaumLog</span>
           <span className="font-medium">{formatCOP(platformCut)} {breakdown.isLongStay ? "(1 mes, larga estancia)" : "(20%)"}</span>
         </div>
+        <div className="flex justify-between text-amber-700">
+          <span>IVA 19% (adicional al precio)</span>
+          <span className="font-medium">+{formatCOP(breakdown.ivaAmount)}</span>
+        </div>
         <div className="flex justify-between font-bold text-[#2C5E8D] pt-1 border-t border-[#AECBE9]/30">
-          <span>VALOR TOTAL PAGADO</span>
+          <span>VALOR TOTAL PAGADO (con IVA)</span>
           <span>{formatCOP(publicPrice)}</span>
         </div>
         {wompiRef && (
@@ -333,7 +341,9 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
   const breakdown: BookingBreakdown = CommissionEngine.getBookingBreakdown(
     months, days, space.rawPriceMonthly, space.rawPriceDaily
   );
-  const publicPrice = breakdown.publicTotal;
+  const basePrice = breakdown.publicTotal;
+  const ivaAmount = breakdown.ivaAmount;
+  const publicPrice = breakdown.userTotal;
   const hostNet = breakdown.hostNetTotal;
   const platformCut = breakdown.commission;
   const proration = calcProration(checkIn, months, space.rawPriceMonthly);
@@ -626,28 +636,32 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
               </p>
               <div className="space-y-2 text-sm border-t border-[#AECBE9]/40 pt-3">
                 <div className="flex justify-between text-[#2C5E8D]/70">
-                  <span>Total del espacio</span>
-                  <span>{formatCOP(publicPrice)}</span>
+                  <span>Precio del espacio</span>
+                  <span>{formatCOP(basePrice)}</span>
                 </div>
                 {breakdown.isLongStay ? (
                   <>
                     <div className="flex justify-between text-green-700 text-xs bg-green-50 rounded px-2 py-1">
                       <span>Comisión RaumLog (1 mes fijo · {breakdown.commissionLabel})</span>
-                      <span>{formatCOP(platformCut)}</span>
+                      <span>−{formatCOP(platformCut)}</span>
                     </div>
                     <div className="flex justify-between text-[#2C5E8D]/40 text-xs">
                       <span>Ahorro vs. modelo 20%</span>
-                      <span className="text-green-600">−{formatCOP(publicPrice * 0.2 - platformCut)}</span>
+                      <span className="text-green-600">−{formatCOP(basePrice * 0.2 - platformCut)}</span>
                     </div>
                   </>
                 ) : (
                   <div className="flex justify-between text-[#2C5E8D]/50 text-xs">
                     <span>Comisión plataforma ({breakdown.commissionLabel})</span>
-                    <span>{formatCOP(platformCut)}</span>
+                    <span>−{formatCOP(platformCut)}</span>
                   </div>
                 )}
+                <div className="flex justify-between text-amber-700 text-xs pt-1 border-t border-[#AECBE9]/30">
+                  <span>IVA 19% (adicional al precio)</span>
+                  <span>+{formatCOP(ivaAmount)}</span>
+                </div>
                 <div className="flex justify-between font-bold text-[#2C5E8D] text-base pt-1 border-t border-[#AECBE9]/30">
-                  <span>Total a pagar</span>
+                  <span>Total a pagar (con IVA)</span>
                   <span>{formatCOP(publicPrice)}</span>
                 </div>
               </div>
@@ -705,7 +719,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                   )}
                   <div className="flex justify-between text-[#2C5E8D]/70">
                     <span>{months > 0 ? `${months} meses × ${space.priceMonthly}` : `${days} días × ${space.priceDaily}`}</span>
-                    <span>{formatCOP(publicPrice)}</span>
+                    <span>{formatCOP(basePrice)}</span>
                   </div>
                   {proration && (
                     <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs">
@@ -724,7 +738,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                       </div>
                       <div className="flex justify-between text-[#2C5E8D]/60 text-xs">
                         <span>≈ {formatCOP(breakdown.monthlyCommissionAmortised ?? 0)}/mes amortizado</span>
-                        <span className="text-green-700 font-medium">vs. 20% = {formatCOP(publicPrice * 0.2)}</span>
+                        <span className="text-green-700 font-medium">vs. 20% = {formatCOP(basePrice * 0.2)}</span>
                       </div>
                     </>
                   ) : (
@@ -733,8 +747,12 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                       <span>{formatCOP(platformCut)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-bold text-[#2C5E8D] text-base pt-1.5 border-t border-[#2C5E8D]/10">
-                    <span>Total a pagar</span>
+                  <div className="flex justify-between text-amber-700 text-xs pt-1 border-t border-[#2C5E8D]/10">
+                    <span>IVA 19% (adicional)</span>
+                    <span>+{formatCOP(ivaAmount)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-[#2C5E8D] text-base pt-1">
+                    <span>Total a pagar (con IVA)</span>
                     <span>{formatCOP(publicPrice)}</span>
                   </div>
                   {!breakdown.isLongStay && months === 0 && (

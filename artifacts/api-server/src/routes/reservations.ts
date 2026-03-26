@@ -83,13 +83,17 @@ router.post("/reservations/:id/pay", async (req, res) => {
   let hostNetPrice = Number(reservation.hostNetPrice);
 
   if (!platformCommission || platformCommission === 0) {
+    // totalPrice includes IVA (base * 1.19); recover base price first
+    const basePrice = Math.round(totalPrice / 1.19);
     if (months >= 6) {
-      // 1 month of rent = totalPrice / months
-      platformCommission = months > 0 ? Math.round(totalPrice / months) : Math.round(totalPrice * 0.2);
+      // Scenario B: 1 month flat commission
+      const monthlyBase = Math.round(basePrice / months);
+      platformCommission = monthlyBase;
     } else {
-      platformCommission = Math.round(totalPrice * 0.2);
+      // Scenario A: 20% of base price
+      platformCommission = Math.round(basePrice * 0.2);
     }
-    hostNetPrice = totalPrice - platformCommission;
+    hostNetPrice = Math.round(totalPrice / 1.19) - platformCommission;
   }
 
   const [updated] = await db

@@ -77,10 +77,15 @@ router.get("/admin/finanzas", requireAdmin, async (_req, res) => {
     .from(reservationsTable)
     .where(inArray(reservationsTable.status, [...paidStatuses]));
 
+  // totalPrice = basePrice + IVA (19% of basePrice)
+  // ivaCollected = totalPrice - platformCommission - hostNetPrice
   const totalRevenue = allPaid.reduce((s, r) => s + Number(r.totalPrice), 0);
   const totalCommission = allPaid.reduce((s, r) => s + Number(r.platformCommission), 0);
-  const ivaOnCommission = Math.round(totalCommission * 0.19);
-  const netCommissionAfterIva = totalCommission - ivaOnCommission;
+  const ivaOnCommission = allPaid.reduce(
+    (s, r) => s + (Number(r.totalPrice) - Number(r.platformCommission) - Number(r.hostNetPrice)),
+    0
+  );
+  const netCommissionAfterIva = totalRevenue - ivaOnCommission;
 
   const payoutMap: Record<string, { email: string; amount: number; count: number }> = {};
   const pendingStatuses = ["paid", "in_storage"];

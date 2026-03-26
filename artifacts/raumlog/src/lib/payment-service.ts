@@ -18,9 +18,14 @@ const WOMPI_SANDBOX_INTEGRITY_KEY = "sandbox_wompi_integrity_key_2024";
 const LONG_STAY_MONTHS = 6;
 
 export interface BookingBreakdown {
+  /** Space base price (what the listing shows). Commission is extracted from this. */
   publicTotal: number;
   hostNetTotal: number;
   commission: number;
+  /** IVA 19% on publicTotal — charged on top, paid by the user, remitted to DIAN */
+  ivaAmount: number;
+  /** Total the user actually pays: publicTotal + ivaAmount */
+  userTotal: number;
   isLongStay: boolean;
   /** For short-stay: percentage rate (0.20). For long-stay: null (flat 1-month model). */
   commissionRate: number | null;
@@ -76,10 +81,14 @@ export const CommissionEngine = {
         const commission = publicMonthly;
         const hostNetTotal = publicTotal - commission;
         const monthlyCommissionAmortised = commission / months;
+        const ivaAmount = Math.round(publicTotal * 0.19);
+        const userTotal = publicTotal + ivaAmount;
         return {
           publicTotal,
           hostNetTotal,
           commission,
+          ivaAmount,
+          userTotal,
           isLongStay: true,
           commissionRate: null,
           commissionLabel: `1 mes fijo (${((1 / months) * 100).toFixed(1)}% efectivo)`,
@@ -87,12 +96,16 @@ export const CommissionEngine = {
         };
       } else {
         // Scenario A: 20%
-        const commission = publicTotal * 0.2;
-        const hostNetTotal = publicTotal * 0.8;
+        const commission = Math.round(publicTotal * 0.2);
+        const hostNetTotal = publicTotal - commission;
+        const ivaAmount = Math.round(publicTotal * 0.19);
+        const userTotal = publicTotal + ivaAmount;
         return {
           publicTotal,
           hostNetTotal,
           commission,
+          ivaAmount,
+          userTotal,
           isLongStay: false,
           commissionRate: 0.2,
           commissionLabel: "20%",
@@ -102,12 +115,16 @@ export const CommissionEngine = {
     } else {
       // Daily pricing — always 20%
       const publicTotal = days * publicDaily;
-      const commission = publicTotal * 0.2;
-      const hostNetTotal = publicTotal * 0.8;
+      const commission = Math.round(publicTotal * 0.2);
+      const hostNetTotal = publicTotal - commission;
+      const ivaAmount = Math.round(publicTotal * 0.19);
+      const userTotal = publicTotal + ivaAmount;
       return {
         publicTotal,
         hostNetTotal,
         commission,
+        ivaAmount,
+        userTotal,
         isLongStay: false,
         commissionRate: 0.2,
         commissionLabel: "20%",
