@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, User, LogOut, Warehouse, Package, ChevronDown } from "lucide-react";
+import { useStore } from "@/store/useStore";
 
 const navLinks = [
   { label: "Inicio", to: "/" },
@@ -12,7 +13,12 @@ const navLinks = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dropOpen, setDropOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  const { authUser, clearAuth } = useStore();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -20,9 +26,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location.pathname]);
+  useEffect(() => { setMenuOpen(false); setDropOpen(false); }, [location.pathname]);
 
   useEffect(() => {
     if (menuOpen) {
@@ -32,6 +36,22 @@ export default function Header() {
     }
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
+        setDropOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function handleLogout() {
+    clearAuth();
+    setDropOpen(false);
+    navigate("/");
+  }
 
   return (
     <>
@@ -72,10 +92,80 @@ export default function Header() {
 
             {/* Right side */}
             <div className="flex items-center justify-end gap-3 w-[20%]">
-              <Link to="/mi-cuenta" className="flex items-center gap-1.5 p-2 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors" aria-label="Mi Cuenta">
-                <User className="w-6 h-6" />
-                <span className="hidden lg:inline text-sm font-semibold">Mi Cuenta</span>
-              </Link>
+              {authUser ? (
+                <div className="relative" ref={dropRef}>
+                  <button
+                    onClick={() => setDropOpen((v) => !v)}
+                    className="flex items-center gap-1.5 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
+                    aria-label="Mi cuenta"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-[#2C5E8D] text-white flex items-center justify-center text-sm font-bold">
+                      {authUser.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="hidden lg:inline text-sm font-semibold max-w-[100px] truncate">
+                      {authUser.name.split(" ")[0]}
+                    </span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform hidden lg:block ${dropOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {dropOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+                      <div className="px-4 py-2.5 border-b border-gray-100">
+                        <p className="font-semibold text-[#1a3d5c] text-sm truncate">{authUser.name}</p>
+                        <p className="text-[#2C5E8D]/50 text-xs truncate">{authUser.email}</p>
+                        <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                          authUser.role === "host"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-green-100 text-green-700"
+                        }`}>
+                          {authUser.role === "host" ? "Anfitrión" : "Cliente"}
+                        </span>
+                      </div>
+                      {authUser.role === "host" && (
+                        <Link
+                          to="/dashboard/host"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#2C5E8D] hover:bg-gray-50 transition-colors"
+                        >
+                          <Warehouse className="w-4 h-4" />
+                          Mi panel de anfitrión
+                        </Link>
+                      )}
+                      {authUser.role === "guest" && (
+                        <Link
+                          to="/encuentra-tu-espacio"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#2C5E8D] hover:bg-gray-50 transition-colors"
+                        >
+                          <Package className="w-4 h-4" />
+                          Buscar espacio
+                        </Link>
+                      )}
+                      <Link
+                        to="/mi-cuenta"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#2C5E8D] hover:bg-gray-50 transition-colors"
+                      >
+                        <User className="w-4 h-4" />
+                        Mi perfil
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/mi-cuenta"
+                  className="flex items-center gap-1.5 p-2 text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
+                  aria-label="Mi Cuenta"
+                >
+                  <User className="w-6 h-6" />
+                  <span className="hidden lg:inline text-sm font-semibold">Mi Cuenta</span>
+                </Link>
+              )}
 
               {/* Mobile hamburger */}
               <button
@@ -95,11 +185,7 @@ export default function Header() {
         <div className="fixed inset-0 z-[100] bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 h-20">
             <Link to="/" className="flex items-center" onClick={() => setMenuOpen(false)}>
-              <img
-                src="/raumlog-logo-main.png"
-                alt="RaumLog"
-                className="h-20 w-auto object-contain"
-              />
+              <img src="/raumlog-logo-main.png" alt="RaumLog" className="h-20 w-auto object-contain" />
             </Link>
             <button
               className="p-2 text-[#2C5E8D] hover:text-[#1a3d5c]"
@@ -120,13 +206,29 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/mi-cuenta"
-              className="text-2xl font-semibold text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
-              onClick={() => setMenuOpen(false)}
-            >
-              Mi Cuenta
-            </Link>
+            {authUser ? (
+              <>
+                {authUser.role === "host" && (
+                  <Link to="/dashboard/host" className="text-2xl font-semibold text-[#2C5E8D]" onClick={() => setMenuOpen(false)}>
+                    Mi panel
+                  </Link>
+                )}
+                <button
+                  onClick={() => { handleLogout(); setMenuOpen(false); }}
+                  className="text-2xl font-semibold text-red-500 hover:text-red-700 transition-colors"
+                >
+                  Cerrar sesión
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/mi-cuenta"
+                className="text-2xl font-semibold text-[#2C5E8D] hover:text-[#1a3d5c] transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Mi Cuenta
+              </Link>
+            )}
           </nav>
         </div>
       )}

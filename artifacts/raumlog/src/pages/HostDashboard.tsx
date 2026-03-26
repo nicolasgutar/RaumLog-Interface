@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useStore } from "@/store/useStore";
 import { fetchHostSpaces, fetchHostReservations, updateReservationStatus } from "@/lib/api";
-import { Home, PackageCheck, TrendingUp, CheckCircle, XCircle, Clock, User } from "lucide-react";
+import { Home, PackageCheck, TrendingUp, CheckCircle, XCircle, Clock, LogIn } from "lucide-react";
 
 type Space = {
   id: number;
@@ -57,13 +58,14 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function HostDashboard() {
-  const { hostEmail, setHostEmail } = useStore();
-  const [emailInput, setEmailInput] = useState("");
-  const [loggedIn, setLoggedIn] = useState(!!hostEmail);
+  const { authUser } = useStore();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("spaces");
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const hostEmail = authUser?.email || "";
 
   const loadData = useCallback(async () => {
     if (!hostEmail) return;
@@ -80,15 +82,8 @@ export default function HostDashboard() {
   }, [hostEmail]);
 
   useEffect(() => {
-    if (loggedIn && hostEmail) loadData();
-  }, [loggedIn, hostEmail, loadData]);
-
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    if (!emailInput.trim()) return;
-    setHostEmail(emailInput.trim().toLowerCase());
-    setLoggedIn(true);
-  }
+    if (hostEmail) loadData();
+  }, [hostEmail, loadData]);
 
   async function handleReservationStatus(id: number, status: "approved_by_host" | "rejected") {
     try {
@@ -111,40 +106,56 @@ export default function HostDashboard() {
   const formatCOP = (n: number) =>
     new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
-  if (!loggedIn) {
+  if (!authUser) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 bg-gray-50 flex items-center justify-center px-4">
-          <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-sm">
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-14 h-14 rounded-full bg-[#2C5E8D]/10 flex items-center justify-center mb-4">
-                <User className="w-7 h-7 text-[#2C5E8D]" />
-              </div>
-              <h1 className="font-heading text-2xl text-[#2C5E8D] uppercase tracking-wide text-center">
-                Panel del Anfitrión
-              </h1>
-              <p className="text-[#2C5E8D]/60 text-sm mt-1 text-center">
-                Ingresa tu correo para ver tus espacios y reservas.
-              </p>
+          <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-sm text-center">
+            <div className="w-14 h-14 rounded-full bg-[#2C5E8D]/10 flex items-center justify-center mx-auto mb-4">
+              <LogIn className="w-7 h-7 text-[#2C5E8D]" />
             </div>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Correo electrónico</label>
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  required
-                  autoFocus
-                  className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                  placeholder="tu@correo.com"
-                />
-              </div>
-              <button type="submit" className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors">
-                Ingresar
-              </button>
-            </form>
+            <h1 className="font-heading text-2xl text-[#2C5E8D] uppercase tracking-wide mb-2">
+              Panel del Anfitrión
+            </h1>
+            <p className="text-[#2C5E8D]/60 text-sm mb-6">
+              Inicia sesión o crea una cuenta de anfitrión para ver tus espacios y reservas.
+            </p>
+            <Link
+              to="/mi-cuenta?redirigir=/dashboard/host"
+              className="block w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors"
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              to="/mi-cuenta?modo=register&redirigir=/dashboard/host"
+              className="block w-full py-3 border border-[#AECBE9] text-[#2C5E8D] hover:bg-[#AECBE9]/10 font-semibold rounded-lg transition-colors mt-3"
+            >
+              Crear cuenta de anfitrión
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (authUser.role !== "host") {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 bg-gray-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-10 w-full max-w-sm text-center">
+            <h1 className="font-heading text-xl text-[#2C5E8D] uppercase tracking-wide mb-3">Acceso restringido</h1>
+            <p className="text-[#2C5E8D]/60 text-sm mb-6">
+              El panel de anfitrión solo está disponible para cuentas de tipo Anfitrión. Tu cuenta es de tipo Cliente.
+            </p>
+            <button
+              onClick={() => navigate("/encuentra-tu-espacio")}
+              className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors"
+            >
+              Buscar espacios
+            </button>
           </div>
         </main>
         <Footer />
@@ -161,14 +172,11 @@ export default function HostDashboard() {
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="font-heading text-2xl text-white uppercase tracking-wide">Panel del Anfitrión</h1>
-              <p className="text-[#AECBE9] text-sm mt-1">{hostEmail}</p>
+              <p className="text-[#AECBE9] text-sm mt-1">{authUser.name} · {authUser.email}</p>
             </div>
             <div className="flex gap-3">
               <button onClick={loadData} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors">
                 Actualizar
-              </button>
-              <button onClick={() => { setHostEmail(""); setLoggedIn(false); }} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors">
-                Salir
               </button>
             </div>
           </div>

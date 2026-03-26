@@ -4,7 +4,7 @@ import Home from "@/pages/Home";
 import FindSpace from "@/pages/FindSpace";
 import OfferSpace from "@/pages/OfferSpace";
 import Contact from "@/pages/Contact";
-import MyAccount from "@/pages/MyAccount";
+import AuthPage from "@/pages/AuthPage";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminControl from "@/pages/AdminControl";
@@ -28,7 +28,7 @@ function App() {
           <Route path="/encuentra-tu-espacio" element={<FindSpace />} />
           <Route path="/ofrece-tu-espacio" element={<OfferSpace />} />
           <Route path="/contacto" element={<Contact />} />
-          <Route path="/mi-cuenta" element={<MyAccount />} />
+          <Route path="/mi-cuenta" element={<AuthPage />} />
           <Route path="/dashboard/host" element={<HostDashboard />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
