@@ -16,7 +16,7 @@ export default function AdminLogin() {
     try {
       const token = await adminLogin(password);
       sessionStorage.setItem("adminToken", token);
-      navigate("/admin");
+      navigate("/admin/control");
     } catch {
       setError("Contraseña incorrecta. Intenta de nuevo.");
     } finally {

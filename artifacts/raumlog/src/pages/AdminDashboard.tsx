@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { fetchAdminSpaces, updateSpaceStatus, deleteSpace } from "@/lib/api";
-import { CheckCircle, XCircle, Trash2, LogOut, RefreshCw, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Trash2, LogOut, RefreshCw, Clock, DollarSign, Shield } from "lucide-react";
 
 type Space = {
   id: number;
@@ -105,7 +105,19 @@ export default function AdminDashboard() {
           <h1 className="font-heading text-xl uppercase tracking-wide">Panel Administrador</h1>
           <p className="text-[#AECBE9] text-sm">RaumLog · Gestión de espacios</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to="/admin/finanzas"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600/80 hover:bg-green-600 text-sm font-semibold transition-colors"
+          >
+            <DollarSign className="w-4 h-4" /> Finanzas
+          </Link>
+          <Link
+            to="/admin/control"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-sm font-semibold transition-colors"
+          >
+            <Shield className="w-4 h-4" /> Control Total
+          </Link>
           <button
             onClick={load}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm transition-colors"
