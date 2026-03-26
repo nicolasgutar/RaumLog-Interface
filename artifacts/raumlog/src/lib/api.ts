@@ -1,6 +1,8 @@
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 export const API_URL = `${BASE}/api`;
 
+// ── Admin ────────────────────────────────────────────────────────────────────
+
 export async function adminLogin(password: string): Promise<string> {
   const res = await fetch(`${API_URL}/admin/login`, {
     method: "POST",
@@ -17,24 +19,25 @@ export async function fetchAdminSpaces(token: string) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("No autorizado");
-  const data = await res.json();
-  return data.spaces;
+  return (await res.json()).spaces;
 }
 
-export async function updateSpaceStatus(
-  token: string,
-  id: number,
-  status: "approved" | "rejected" | "pending"
-) {
+export async function updateSpaceStatus(token: string, id: number, status: "approved" | "rejected" | "pending") {
   const res = await fetch(`${API_URL}/admin/spaces/${id}/status`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ status }),
   });
   if (!res.ok) throw new Error("Error al actualizar");
+}
+
+export async function publishSpace(token: string, id: number, published: boolean) {
+  const res = await fetch(`${API_URL}/admin/spaces/${id}/publish`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ published }),
+  });
+  if (!res.ok) throw new Error("Error al publicar");
 }
 
 export async function deleteSpace(token: string, id: number) {
@@ -45,16 +48,34 @@ export async function deleteSpace(token: string, id: number) {
   if (!res.ok) throw new Error("Error al eliminar");
 }
 
-export async function submitSpace(data: {
-  ownerName: string;
-  ownerEmail: string;
-  ownerPhone: string;
-  spaceType: string;
-  city: string;
-  address: string;
-  description: string;
-  priceMonthly: string;
-}) {
+export async function fetchAdminReservations(token: string) {
+  const res = await fetch(`${API_URL}/admin/reservations`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("No autorizado");
+  return (await res.json()).reservations;
+}
+
+export async function fetchAdminKyc(token: string) {
+  const res = await fetch(`${API_URL}/admin/kyc`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("No autorizado");
+  return (await res.json()).submissions;
+}
+
+export async function updateKycStatus(token: string, id: number, status: "approved" | "rejected", adminNotes?: string) {
+  const res = await fetch(`${API_URL}/admin/kyc/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status, adminNotes }),
+  });
+  if (!res.ok) throw new Error("Error al actualizar KYC");
+}
+
+// ── Spaces ───────────────────────────────────────────────────────────────────
+
+export async function submitSpace(data: object) {
   const res = await fetch(`${API_URL}/spaces`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -62,4 +83,77 @@ export async function submitSpace(data: {
   });
   if (!res.ok) throw new Error("Error al enviar");
   return res.json();
+}
+
+// ── Reservations ─────────────────────────────────────────────────────────────
+
+export async function createReservation(data: object) {
+  const res = await fetch(`${API_URL}/reservations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al crear reserva");
+  return (await res.json()).reservation;
+}
+
+export async function payReservation(id: number) {
+  const res = await fetch(`${API_URL}/reservations/${id}/pay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Error al procesar pago");
+  return res.json();
+}
+
+// ── Host ─────────────────────────────────────────────────────────────────────
+
+export async function fetchHostSpaces(email: string) {
+  const res = await fetch(`${API_URL}/host/spaces?email=${encodeURIComponent(email)}`);
+  if (!res.ok) throw new Error("Error al cargar espacios");
+  return (await res.json()).spaces;
+}
+
+export async function fetchHostReservations(email: string) {
+  const res = await fetch(`${API_URL}/host/reservations?email=${encodeURIComponent(email)}`);
+  if (!res.ok) throw new Error("Error al cargar reservas");
+  return (await res.json()).reservations;
+}
+
+export async function updateReservationStatus(id: number, status: "approved" | "rejected", ownerEmail: string) {
+  const res = await fetch(`${API_URL}/host/reservations/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, ownerEmail }),
+  });
+  if (!res.ok) throw new Error("Error al actualizar reserva");
+  return (await res.json()).reservation;
+}
+
+// ── KYC ──────────────────────────────────────────────────────────────────────
+
+export async function submitKyc(data: object) {
+  const res = await fetch(`${API_URL}/kyc`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al enviar documentos");
+  return res.json();
+}
+
+// ── Wompi Integrity Signature ─────────────────────────────────────────────────
+
+export async function generateWompiSignature(
+  reference: string,
+  amountInCents: number,
+  currency: string,
+  integrityKey: string
+): Promise<string> {
+  const data = `${reference}${amountInCents}${currency}${integrityKey}`;
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(data);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }

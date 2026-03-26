@@ -7,6 +7,8 @@ import Contact from "@/pages/Contact";
 import MyAccount from "@/pages/MyAccount";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AdminControl from "@/pages/AdminControl";
+import HostDashboard from "@/pages/HostDashboard";
 import NotFound from "@/pages/not-found";
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -24,8 +26,10 @@ function App() {
           <Route path="/ofrece-tu-espacio" element={<OfferSpace />} />
           <Route path="/contacto" element={<Contact />} />
           <Route path="/mi-cuenta" element={<MyAccount />} />
+          <Route path="/dashboard/host" element={<HostDashboard />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/control" element={<AdminControl />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

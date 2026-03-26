@@ -1,0 +1,47 @@
+Objetivo: Extender el frontend actual de RaumLog para convertirlo en una Single Page Application (SPA) funcional con lógica de usuario, gestión de espacios e integración de pagos.
+
+1. Sistema de Reservas y Booking (Lógica de Cliente):
+
+Feature: Selector de fechas (Check-in / Check-out) en la vista de detalle del inmueble.
+
+Lógica: Calcular Días de estancia * Precio diario. Si el espacio es de larga estancia, aplicar lógica de Meses * Precio mensual.
+
+Validación: Impedir que el usuario avance si no ha aceptado los Términos y Condiciones de Almacenamiento.
+
+2. Dashboard del Anfitrión (Host Panel):
+
+Vista: Crear una ruta /dashboard/host protegida.
+
+Funciones:
+
+Listado de "Mis Espacios" con estado (Activo/Inactivo/Pendiente de aprobación).
+
+Sección de "Solicitudes de Reserva": El anfitrión debe poder ver quién quiere guardar, qué quiere guardar y darle al botón de Aprobar o Rechazar.
+
+Métrica de "Ingresos Estimados": Sumatoria de las reservas aprobadas.
+
+3. Módulo de Confianza y KYC (Carga de Archivos):
+
+Feature: Formulario de registro para nuevos anfitriones que incluya campos de carga de archivos (PDF o Imagen) para: Cédula de Ciudadanía y RUT/Recibo público.
+
+Lógica: Los archivos deben enviarse a un estado de "Pendiente de Revisión" para el menú de administrador.
+
+4. Especificación de Integración de Pagos (Wompi API):
+
+Tarea: Prepara el componente de Checkout para integrar el Widget de Wompi.
+
+Requerimiento: Crea una función handlePayment que genere la firma de integridad (Integrity Signature) necesaria para Wompi.
+
+Simulación: Por ahora, implementa un "SandBox Mode" donde, al hacer clic en pagar, el sistema reciba una respuesta exitosa simulada y actualice el estado de la reserva en la base de datos a PAGADO.
+
+5. Menú de Administrador (SuperAdmin):
+
+Vista: Ruta /admin/control.
+
+Funciones: Tabla con todos los espacios creados por anfitriones. Botones de acción: Publicar (hace el espacio visible en la Home) o Rechazar (notifica al usuario).
+
+Instrucciones de Código:
+
+Usa Context API o Zustand para manejar el estado global (usuario logueado, carrito, reservas).
+
+Asegura que todas las nuevas rutas sean Responsivas, siguiendo la estética de las capturas de pantalla enviadas anteriormente.

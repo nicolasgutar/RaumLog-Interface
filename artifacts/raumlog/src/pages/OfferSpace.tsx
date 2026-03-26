@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Camera, DollarSign, Shield, Star, CheckCircle } from "lucide-react";
-import { submitSpace } from "@/lib/api";
+import { Camera, DollarSign, Shield, Star, CheckCircle, Upload, FileText, X } from "lucide-react";
+import { submitSpace, submitKyc } from "@/lib/api";
 
 const benefits = [
   {
@@ -27,8 +27,21 @@ const benefits = [
   },
 ];
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+type Step = "space" | "kyc" | "success";
+
 export default function OfferSpace() {
-  const [form, setForm] = useState({
+  const [step, setStep] = useState<Step>("space");
+
+  const [spaceForm, setSpaceForm] = useState({
     ownerName: "",
     ownerEmail: "",
     ownerPhone: "",
@@ -37,37 +50,75 @@ export default function OfferSpace() {
     address: "",
     description: "",
     priceMonthly: "",
+    priceDaily: "",
+    priceAnnual: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+
+  const [kycForm, setKycForm] = useState({
+    cedulaFile: null as File | null,
+    rutFile: null as File | null,
+  });
+
+  const [spaceLoading, setSpaceLoading] = useState(false);
+  const [kycLoading, setKycLoading] = useState(false);
   const [error, setError] = useState("");
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  function handleSpaceChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+    setSpaceForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSpaceSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setSpaceLoading(true);
     try {
-      await submitSpace(form);
-      setSuccess(true);
-      setForm({
-        ownerName: "",
-        ownerEmail: "",
-        ownerPhone: "",
-        spaceType: "Garaje",
-        city: "",
-        address: "",
-        description: "",
-        priceMonthly: "",
-      });
+      await submitSpace(spaceForm);
+      setStep("kyc");
     } catch {
       setError("Hubo un error al enviar tu solicitud. Por favor intenta de nuevo.");
     } finally {
-      setLoading(false);
+      setSpaceLoading(false);
     }
+  }
+
+  async function handleKycSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setKycLoading(true);
+    try {
+      let cedulaData = "";
+      let cedulaFilename = "";
+      let rutData = "";
+      let rutFilename = "";
+
+      if (kycForm.cedulaFile) {
+        cedulaData = await fileToBase64(kycForm.cedulaFile);
+        cedulaFilename = kycForm.cedulaFile.name;
+      }
+      if (kycForm.rutFile) {
+        rutData = await fileToBase64(kycForm.rutFile);
+        rutFilename = kycForm.rutFile.name;
+      }
+
+      await submitKyc({
+        hostEmail: spaceForm.ownerEmail,
+        hostName: spaceForm.ownerName,
+        hostPhone: spaceForm.ownerPhone,
+        cedulaFilename,
+        cedulaData,
+        rutFilename,
+        rutData,
+      });
+      setStep("success");
+    } catch {
+      setError("Error al enviar los documentos. Intenta de nuevo.");
+    } finally {
+      setKycLoading(false);
+    }
+  }
+
+  function skipKyc() {
+    setStep("success");
   }
 
   return (
@@ -110,148 +161,215 @@ export default function OfferSpace() {
           </div>
         </section>
 
-        {/* CTA Form */}
+        {/* Form section */}
         <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[#D8CFC3]/30">
           <div className="max-w-2xl mx-auto">
-            <h2 className="font-heading text-3xl text-[#2C5E8D] text-center mb-8 uppercase tracking-wide">
-              Registra tu espacio hoy
-            </h2>
 
-            {success ? (
+            {step === "success" ? (
               <div className="bg-white rounded-2xl p-10 shadow text-center">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                <h3 className="font-heading text-2xl text-[#2C5E8D] mb-2">¡Solicitud enviada!</h3>
-                <p className="text-[#2C5E8D]/70">
-                  Recibimos tu registro. Nuestro equipo lo revisará pronto y se pondrá en contacto contigo.
+                <h3 className="font-heading text-2xl text-[#2C5E8D] mb-2">¡Registro completo!</h3>
+                <p className="text-[#2C5E8D]/70 mb-2">
+                  Recibimos tu espacio y documentos. Nuestro equipo los revisará y te contactará pronto.
+                </p>
+                <p className="text-sm text-[#2C5E8D]/50">
+                  Puedes ver el estado de tu espacio en el{" "}
+                  <a href="/dashboard/host" className="text-[#2C5E8D] underline font-medium">Panel del Anfitrión</a>.
                 </p>
                 <button
-                  onClick={() => setSuccess(false)}
+                  onClick={() => { setStep("space"); setSpaceForm({ ownerName: "", ownerEmail: "", ownerPhone: "", spaceType: "Garaje", city: "", address: "", description: "", priceMonthly: "", priceDaily: "", priceAnnual: "" }); }}
                   className="mt-6 px-6 py-2.5 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors"
                 >
                   Registrar otro espacio
                 </button>
               </div>
+
+            ) : step === "kyc" ? (
+              <div className="bg-white rounded-2xl p-8 shadow">
+                {/* Progress */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm text-[#2C5E8D]/60">Datos del espacio</span>
+                  </div>
+                  <div className="flex-1 h-px bg-[#AECBE9]/40" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-[#2C5E8D] flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-[#2C5E8D]">Verificación KYC</span>
+                  </div>
+                </div>
+
+                <h2 className="font-heading text-2xl text-[#2C5E8D] mb-2 uppercase tracking-wide">Verificación de identidad</h2>
+                <p className="text-[#2C5E8D]/60 text-sm mb-6">
+                  Para publicar tu espacio necesitamos verificar tu identidad. Sube los documentos requeridos (PDF o imagen).
+                  Quedarán en estado <strong>Pendiente de revisión</strong>.
+                </p>
+
+                <form onSubmit={handleKycSubmit} className="space-y-5">
+                  {/* Cédula */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-2">
+                      Cédula de Ciudadanía *
+                    </label>
+                    <div className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors ${kycForm.cedulaFile ? "border-green-400 bg-green-50" : "border-[#AECBE9] hover:border-[#2C5E8D]"}`}>
+                      {kycForm.cedulaFile ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <FileText className="w-5 h-5 text-green-600" />
+                          <span className="text-sm text-green-700 font-medium">{kycForm.cedulaFile.name}</span>
+                          <button type="button" onClick={() => setKycForm((p) => ({ ...p, cedulaFile: null }))}
+                            className="text-red-400 hover:text-red-600">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="cursor-pointer flex flex-col items-center gap-2">
+                          <Upload className="w-8 h-8 text-[#AECBE9]" />
+                          <span className="text-sm text-[#2C5E8D]/60">Haz clic para subir tu cédula</span>
+                          <span className="text-xs text-[#2C5E8D]/40">PDF, JPG, PNG — máx. 5 MB</span>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="sr-only"
+                            onChange={(e) => setKycForm((p) => ({ ...p, cedulaFile: e.target.files?.[0] || null }))} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* RUT */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-2">
+                      RUT o Recibo de Servicio Público *
+                    </label>
+                    <div className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors ${kycForm.rutFile ? "border-green-400 bg-green-50" : "border-[#AECBE9] hover:border-[#2C5E8D]"}`}>
+                      {kycForm.rutFile ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <FileText className="w-5 h-5 text-green-600" />
+                          <span className="text-sm text-green-700 font-medium">{kycForm.rutFile.name}</span>
+                          <button type="button" onClick={() => setKycForm((p) => ({ ...p, rutFile: null }))}
+                            className="text-red-400 hover:text-red-600">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="cursor-pointer flex flex-col items-center gap-2">
+                          <Upload className="w-8 h-8 text-[#AECBE9]" />
+                          <span className="text-sm text-[#2C5E8D]/60">Haz clic para subir el documento</span>
+                          <span className="text-xs text-[#2C5E8D]/40">PDF, JPG, PNG — máx. 5 MB</span>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="sr-only"
+                            onChange={(e) => setKycForm((p) => ({ ...p, rutFile: e.target.files?.[0] || null }))} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+                  <button type="submit" disabled={kycLoading || !kycForm.cedulaFile || !kycForm.rutFile}
+                    className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors">
+                    {kycLoading ? "Enviando documentos..." : "Enviar documentos para revisión"}
+                  </button>
+                  <button type="button" onClick={skipKyc}
+                    className="w-full py-2 text-[#2C5E8D]/50 hover:text-[#2C5E8D] text-sm transition-colors">
+                    Omitir por ahora (enviaré documentos más tarde)
+                  </button>
+                </form>
+              </div>
+
             ) : (
-              <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <>
+                <h2 className="font-heading text-3xl text-[#2C5E8D] text-center mb-2 uppercase tracking-wide">
+                  Registra tu espacio hoy
+                </h2>
+                <p className="text-center text-[#2C5E8D]/60 text-sm mb-8">Paso 1 de 2 · Información del espacio</p>
+
+                <form onSubmit={handleSpaceSubmit} className="bg-white rounded-2xl p-8 shadow space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Nombre completo *</label>
+                      <input type="text" name="ownerName" value={spaceForm.ownerName} onChange={handleSpaceChange} required
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                        placeholder="Tu nombre" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Teléfono / WhatsApp *</label>
+                      <input type="tel" name="ownerPhone" value={spaceForm.ownerPhone} onChange={handleSpaceChange} required
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                        placeholder="+57 300 000 0000" />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Nombre completo *</label>
-                    <input
-                      type="text"
-                      name="ownerName"
-                      value={form.ownerName}
-                      onChange={handleChange}
-                      required
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Correo electrónico *</label>
+                    <input type="email" name="ownerEmail" value={spaceForm.ownerEmail} onChange={handleSpaceChange} required
                       className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                      placeholder="Tu nombre"
-                    />
+                      placeholder="tu@email.com" />
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Tipo de espacio *</label>
+                      <select name="spaceType" value={spaceForm.spaceType} onChange={handleSpaceChange} required
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 bg-white">
+                        <option>Garaje</option>
+                        <option>Cuarto útil</option>
+                        <option>Bodega</option>
+                        <option>Habitación vacía</option>
+                        <option>Otro</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Ciudad *</label>
+                      <input type="text" name="city" value={spaceForm.city} onChange={handleSpaceChange} required
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                        placeholder="Medellín, Bogotá..." />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Teléfono / WhatsApp *</label>
-                    <input
-                      type="tel"
-                      name="ownerPhone"
-                      value={form.ownerPhone}
-                      onChange={handleChange}
-                      required
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Dirección o sector</label>
+                    <input type="text" name="address" value={spaceForm.address} onChange={handleSpaceChange}
                       className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                      placeholder="+57 300 000 0000"
-                    />
+                      placeholder="Barrio, calle, referencia..." />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Correo electrónico *</label>
-                  <input
-                    type="email"
-                    name="ownerEmail"
-                    value={form.ownerEmail}
-                    onChange={handleChange}
-                    required
-                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                    placeholder="tu@email.com"
-                  />
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Precio diario (COP)</label>
+                      <input type="text" name="priceDaily" value={spaceForm.priceDaily} onChange={handleSpaceChange}
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                        placeholder="ej. 30000" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Precio mensual (COP)</label>
+                      <input type="text" name="priceMonthly" value={spaceForm.priceMonthly} onChange={handleSpaceChange}
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                        placeholder="ej. 500000" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Precio anual (COP)</label>
+                      <input type="text" name="priceAnnual" value={spaceForm.priceAnnual} onChange={handleSpaceChange}
+                        className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                        placeholder="ej. 5000000" />
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Tipo de espacio *</label>
-                    <select
-                      name="spaceType"
-                      value={form.spaceType}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 bg-white"
-                    >
-                      <option>Garaje</option>
-                      <option>Cuarto útil</option>
-                      <option>Bodega</option>
-                      <option>Habitación vacía</option>
-                      <option>Otro</option>
-                    </select>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Descripción del espacio</label>
+                    <textarea name="description" value={spaceForm.description} onChange={handleSpaceChange} rows={3}
+                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 resize-none"
+                      placeholder="Cuéntanos más sobre el espacio: tamaño, acceso, condiciones..." />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Ciudad *</label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={form.city}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                      placeholder="Medellín, Bogotá..."
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Dirección o sector</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={form.address}
-                    onChange={handleChange}
-                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                    placeholder="Barrio, calle, referencia..."
-                  />
-                </div>
+                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-                <div>
-                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Precio mensual aproximado (COP)</label>
-                  <input
-                    type="text"
-                    name="priceMonthly"
-                    value={form.priceMonthly}
-                    onChange={handleChange}
-                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
-                    placeholder="ej. 250000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Descripción del espacio</label>
-                  <textarea
-                    name="description"
-                    value={form.description}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 resize-none"
-                    placeholder="Cuéntanos más sobre el espacio: tamaño, acceso, condiciones..."
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-red-500 text-sm text-center">{error}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors tracking-wide"
-                >
-                  {loading ? "Enviando..." : "Registrar mi espacio"}
-                </button>
-              </form>
+                  <button type="submit" disabled={spaceLoading}
+                    className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors tracking-wide">
+                    {spaceLoading ? "Enviando..." : "Continuar → Verificación de identidad"}
+                  </button>
+                </form>
+              </>
             )}
           </div>
         </section>

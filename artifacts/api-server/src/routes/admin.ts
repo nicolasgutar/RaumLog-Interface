@@ -1,18 +1,15 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-import { db, spacesTable } from "@workspace/db";
+import { db, spacesTable, reservationsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const router = Router();
-
 const JWT_SECRET = process.env["JWT_SECRET"] || "fallback-secret";
 const ADMIN_PASSWORD = process.env["ADMIN_PASSWORD"] || "";
 
 function requireAdmin(req: any, res: any, next: any) {
   const auth = req.headers["authorization"] as string | undefined;
-  if (!auth?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No autorizado" });
-  }
+  if (!auth?.startsWith("Bearer ")) return res.status(401).json({ error: "No autorizado" });
   const token = auth.slice(7);
   try {
     jwt.verify(token, JWT_SECRET);
@@ -49,10 +46,28 @@ router.patch("/admin/spaces/:id/status", requireAdmin, async (req, res) => {
   return res.json({ success: true });
 });
 
+router.patch("/admin/spaces/:id/publish", requireAdmin, async (req, res) => {
+  const id = Number(req.params["id"]);
+  const { published } = req.body as { published?: boolean };
+  await db
+    .update(spacesTable)
+    .set({ published: !!published, updatedAt: new Date() })
+    .where(eq(spacesTable.id, id));
+  return res.json({ success: true });
+});
+
 router.delete("/admin/spaces/:id", requireAdmin, async (req, res) => {
   const id = Number(req.params["id"]);
   await db.delete(spacesTable).where(eq(spacesTable.id, id));
   return res.json({ success: true });
+});
+
+router.get("/admin/reservations", requireAdmin, async (_req, res) => {
+  const reservations = await db
+    .select()
+    .from(reservationsTable)
+    .orderBy(reservationsTable.createdAt);
+  return res.json({ reservations });
 });
 
 export default router;

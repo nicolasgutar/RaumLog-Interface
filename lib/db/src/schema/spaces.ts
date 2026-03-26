@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -14,6 +14,9 @@ export const spacesTable = pgTable("spaces", {
   address: text("address").notNull().default(""),
   description: text("description").notNull().default(""),
   priceMonthly: text("price_monthly").notNull().default(""),
+  priceDaily: text("price_daily").notNull().default(""),
+  priceAnnual: text("price_annual").notNull().default(""),
+  published: boolean("published").notNull().default(false),
   status: spaceStatusEnum("status").notNull().default("pending"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -22,6 +25,7 @@ export const spacesTable = pgTable("spaces", {
 export const insertSpaceSchema = createInsertSchema(spacesTable).omit({
   id: true,
   status: true,
+  published: true,
   createdAt: true,
   updatedAt: true,
 });
