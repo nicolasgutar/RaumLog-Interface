@@ -1,6 +1,8 @@
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Camera, DollarSign, Shield, Star } from "lucide-react";
+import { Camera, DollarSign, Shield, Star, CheckCircle } from "lucide-react";
+import { submitSpace } from "@/lib/api";
 
 const benefits = [
   {
@@ -26,6 +28,48 @@ const benefits = [
 ];
 
 export default function OfferSpace() {
+  const [form, setForm] = useState({
+    ownerName: "",
+    ownerEmail: "",
+    ownerPhone: "",
+    spaceType: "Garaje",
+    city: "",
+    address: "",
+    description: "",
+    priceMonthly: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await submitSpace(form);
+      setSuccess(true);
+      setForm({
+        ownerName: "",
+        ownerEmail: "",
+        ownerPhone: "",
+        spaceType: "Garaje",
+        city: "",
+        address: "",
+        description: "",
+        priceMonthly: "",
+      });
+    } catch {
+      setError("Hubo un error al enviar tu solicitud. Por favor intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -72,33 +116,143 @@ export default function OfferSpace() {
             <h2 className="font-heading text-3xl text-[#2C5E8D] text-center mb-8 uppercase tracking-wide">
               Registra tu espacio hoy
             </h2>
-            <form className="bg-white rounded-2xl p-8 shadow space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Nombre completo</label>
-                <input type="text" className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30" placeholder="Tu nombre" />
+
+            {success ? (
+              <div className="bg-white rounded-2xl p-10 shadow text-center">
+                <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                <h3 className="font-heading text-2xl text-[#2C5E8D] mb-2">¡Solicitud enviada!</h3>
+                <p className="text-[#2C5E8D]/70">
+                  Recibimos tu registro. Nuestro equipo lo revisará pronto y se pondrá en contacto contigo.
+                </p>
+                <button
+                  onClick={() => setSuccess(false)}
+                  className="mt-6 px-6 py-2.5 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors"
+                >
+                  Registrar otro espacio
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Correo electrónico</label>
-                <input type="email" className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30" placeholder="tu@email.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Tipo de espacio</label>
-                <select className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 bg-white">
-                  <option>Garaje</option>
-                  <option>Cuarto útil</option>
-                  <option>Bodega</option>
-                  <option>Habitación vacía</option>
-                  <option>Otro</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Ciudad</label>
-                <input type="text" className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30" placeholder="Ciudad donde está el espacio" />
-              </div>
-              <button type="submit" className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors tracking-wide">
-                Registrar mi espacio
-              </button>
-            </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Nombre completo *</label>
+                    <input
+                      type="text"
+                      name="ownerName"
+                      value={form.ownerName}
+                      onChange={handleChange}
+                      required
+                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                      placeholder="Tu nombre"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Teléfono / WhatsApp *</label>
+                    <input
+                      type="tel"
+                      name="ownerPhone"
+                      value={form.ownerPhone}
+                      onChange={handleChange}
+                      required
+                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                      placeholder="+57 300 000 0000"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Correo electrónico *</label>
+                  <input
+                    type="email"
+                    name="ownerEmail"
+                    value={form.ownerEmail}
+                    onChange={handleChange}
+                    required
+                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Tipo de espacio *</label>
+                    <select
+                      name="spaceType"
+                      value={form.spaceType}
+                      onChange={handleChange}
+                      required
+                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 bg-white"
+                    >
+                      <option>Garaje</option>
+                      <option>Cuarto útil</option>
+                      <option>Bodega</option>
+                      <option>Habitación vacía</option>
+                      <option>Otro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Ciudad *</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      required
+                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                      placeholder="Medellín, Bogotá..."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Dirección o sector</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                    placeholder="Barrio, calle, referencia..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Precio mensual aproximado (COP)</label>
+                  <input
+                    type="text"
+                    name="priceMonthly"
+                    value={form.priceMonthly}
+                    onChange={handleChange}
+                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
+                    placeholder="ej. 250000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Descripción del espacio</label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 resize-none"
+                    placeholder="Cuéntanos más sobre el espacio: tamaño, acceso, condiciones..."
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors tracking-wide"
+                >
+                  {loading ? "Enviando..." : "Registrar mi espacio"}
+                </button>
+              </form>
+            )}
           </div>
         </section>
       </main>

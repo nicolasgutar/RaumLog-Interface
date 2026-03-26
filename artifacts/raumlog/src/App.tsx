@@ -5,6 +5,8 @@ import FindSpace from "@/pages/FindSpace";
 import OfferSpace from "@/pages/OfferSpace";
 import Contact from "@/pages/Contact";
 import MyAccount from "@/pages/MyAccount";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -22,6 +24,8 @@ function App() {
           <Route path="/ofrece-tu-espacio" element={<OfferSpace />} />
           <Route path="/contacto" element={<Contact />} />
           <Route path="/mi-cuenta" element={<MyAccount />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
