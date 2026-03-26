@@ -80,9 +80,8 @@ export default function Footer() {
               Legal
             </h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-white hover:text-[#AECBE9] transition-colors text-sm">Términos y Condiciones</a></li>
-              <li><a href="#" className="text-white hover:text-[#AECBE9] transition-colors text-sm">Política de Privacidad</a></li>
-              <li><a href="#" className="text-white hover:text-[#AECBE9] transition-colors text-sm">Aviso Legal</a></li>
+              <li><Link to="/terminos-y-condiciones" className="text-white hover:text-[#AECBE9] transition-colors text-sm">Términos y Condiciones</Link></li>
+              <li><Link to="/politica-de-privacidad" className="text-white hover:text-[#AECBE9] transition-colors text-sm">Política de Privacidad</Link></li>
             </ul>
           </div>
         </div>
