@@ -28,24 +28,32 @@ type Reservation = {
   days: number;
   months: number;
   totalPrice: string;
-  status: "pending" | "approved" | "rejected" | "paid";
+  hostNetPrice: string;
+  platformCommission: string;
+  declaredValue: string;
+  wompiReference: string;
+  status: "pending_approval" | "approved_by_host" | "rejected" | "paid" | "in_storage" | "completed";
   createdAt: string;
 };
 
 type Tab = "spaces" | "reservations" | "earnings";
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "Pendiente de aprobación",
-  approved: "Activo",
-  rejected: "Rechazado",
-  paid: "Pagado",
+  pending_approval: "Pendiente de aprobación",
+  approved_by_host: "Aprobada por anfitrión",
+  rejected: "Rechazada",
+  paid: "Pagada",
+  in_storage: "En almacenamiento",
+  completed: "Finalizada",
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  approved: "bg-green-100 text-green-700",
+  pending_approval: "bg-yellow-100 text-yellow-700",
+  approved_by_host: "bg-blue-100 text-blue-700",
   rejected: "bg-red-100 text-red-700",
-  paid: "bg-blue-100 text-blue-700",
+  paid: "bg-green-100 text-green-700",
+  in_storage: "bg-purple-100 text-purple-700",
+  completed: "bg-gray-100 text-gray-600",
 };
 
 export default function HostDashboard() {
@@ -82,7 +90,7 @@ export default function HostDashboard() {
     setLoggedIn(true);
   }
 
-  async function handleReservationStatus(id: number, status: "approved" | "rejected") {
+  async function handleReservationStatus(id: number, status: "approved_by_host" | "rejected") {
     try {
       await updateReservationStatus(id, status, hostEmail);
       setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
@@ -91,8 +99,14 @@ export default function HostDashboard() {
     }
   }
 
-  const approvedReservations = reservations.filter((r) => r.status === "approved" || r.status === "paid");
-  const estimatedRevenue = approvedReservations.reduce((sum, r) => sum + Number(r.totalPrice || 0), 0);
+  const paidReservations = reservations.filter((r) =>
+    ["paid", "in_storage", "completed"].includes(r.status)
+  );
+  const estimatedRevenue = paidReservations.reduce((sum, r) => {
+    const net = Number(r.hostNetPrice || 0);
+    const total = Number(r.totalPrice || 0);
+    return sum + (net > 0 ? net : total * 0.8);
+  }, 0);
 
   const formatCOP = (n: number) =>
     new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -177,7 +191,7 @@ export default function HostDashboard() {
                 <PackageCheck className="w-6 h-6 text-[#2C5E8D]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#2C5E8D]">{reservations.filter((r) => r.status === "pending").length}</p>
+                <p className="text-2xl font-bold text-[#2C5E8D]">{reservations.filter((r) => r.status === "pending_approval").length}</p>
                 <p className="text-sm text-[#2C5E8D]/60">Solicitudes pendientes</p>
               </div>
             </div>
@@ -242,7 +256,7 @@ export default function HostDashboard() {
                       <div className="flex items-center gap-2 flex-wrap mb-2">
                         <h3 className="font-semibold text-[#2C5E8D]">{res.guestName}</h3>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[res.status]}`}>
-                          {res.status === "pending" && <Clock className="inline w-3 h-3 mr-0.5" />}
+                          {res.status === "pending_approval" && <Clock className="inline w-3 h-3 mr-0.5" />}
                           {STATUS_LABELS[res.status]}
                         </span>
                       </div>
@@ -258,9 +272,9 @@ export default function HostDashboard() {
                         <p className="mt-2 text-sm text-[#2C5E8D]/60 italic">Va a guardar: "{res.itemsDescription}"</p>
                       )}
                     </div>
-                    {res.status === "pending" && (
+                    {res.status === "pending_approval" && (
                       <div className="flex sm:flex-col gap-2 flex-shrink-0">
-                        <button onClick={() => handleReservationStatus(res.id, "approved")}
+                        <button onClick={() => handleReservationStatus(res.id, "approved_by_host")}
                           className="flex items-center gap-1.5 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-sm font-medium transition-colors">
                           <CheckCircle className="w-4 h-4" /> Aprobar
                         </button>
@@ -277,21 +291,42 @@ export default function HostDashboard() {
           ) : (
             <div className="space-y-4">
               <div className="bg-white rounded-2xl shadow p-6">
-                <h3 className="font-heading text-xl text-[#2C5E8D] mb-4 uppercase">Resumen de Ingresos</h3>
-                <div className="text-4xl font-bold text-green-600 mb-2">{formatCOP(estimatedRevenue)}</div>
-                <p className="text-[#2C5E8D]/60 text-sm mb-6">Suma de reservas aprobadas y pagadas</p>
+                <h3 className="font-heading text-xl text-[#2C5E8D] mb-1 uppercase">Resumen de Ingresos</h3>
+                <p className="text-xs text-[#2C5E8D]/50 mb-4">Comisión RaumLog: 20% · Tu parte (neto): 80%</p>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-50 rounded-xl p-4">
+                    <p className="text-xs text-[#2C5E8D]/60 mb-1">Tus ingresos netos (80%)</p>
+                    <p className="text-2xl font-bold text-green-600">{formatCOP(estimatedRevenue)}</p>
+                  </div>
+                  <div className="bg-[#AECBE9]/20 rounded-xl p-4">
+                    <p className="text-xs text-[#2C5E8D]/60 mb-1">Reservas pagadas</p>
+                    <p className="text-2xl font-bold text-[#2C5E8D]">{paidReservations.length}</p>
+                  </div>
+                </div>
                 <div className="space-y-3">
-                  {approvedReservations.length === 0 ? (
-                    <p className="text-[#2C5E8D]/50 text-sm">Aún no tienes reservas aprobadas.</p>
-                  ) : approvedReservations.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between py-2 border-b border-[#AECBE9]/30 text-sm">
-                      <div>
-                        <p className="font-medium text-[#2C5E8D]">{r.guestName} — {r.spaceTitle}</p>
-                        <p className="text-[#2C5E8D]/60">{r.checkIn} → {r.checkOut}</p>
+                  {paidReservations.length === 0 ? (
+                    <p className="text-[#2C5E8D]/50 text-sm">Aún no tienes reservas pagadas.</p>
+                  ) : paidReservations.map((r) => {
+                    const net = Number(r.hostNetPrice) > 0 ? Number(r.hostNetPrice) : Number(r.totalPrice) * 0.8;
+                    const commission = Number(r.totalPrice) - net;
+                    return (
+                      <div key={r.id} className="py-2 border-b border-[#AECBE9]/30 text-sm">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-[#2C5E8D]">{r.guestName} — {r.spaceTitle}</p>
+                            <p className="text-[#2C5E8D]/60">{r.checkIn} → {r.checkOut}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-green-600">{formatCOP(net)}</p>
+                            <p className="text-xs text-[#2C5E8D]/40">total: {formatCOP(Number(r.totalPrice))} · com: {formatCOP(commission)}</p>
+                          </div>
+                        </div>
+                        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[r.status]}`}>
+                          {STATUS_LABELS[r.status]}
+                        </span>
                       </div>
-                      <span className="font-bold text-green-600">{formatCOP(Number(r.totalPrice))}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

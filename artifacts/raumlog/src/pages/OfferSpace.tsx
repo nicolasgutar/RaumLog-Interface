@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Camera, DollarSign, Shield, Star, CheckCircle, Upload, FileText, X } from "lucide-react";
+import { Camera, DollarSign, Shield, Star, CheckCircle, Upload, FileText, X, Calculator } from "lucide-react";
 import { submitSpace, submitKyc } from "@/lib/api";
+import { CommissionEngine } from "@/lib/payment-service";
 
 const benefits = [
   {
@@ -62,6 +63,15 @@ export default function OfferSpace() {
   const [spaceLoading, setSpaceLoading] = useState(false);
   const [kycLoading, setKycLoading] = useState(false);
   const [error, setError] = useState("");
+  const [desiredNet, setDesiredNet] = useState("");
+
+  const desiredNetNum = Number(desiredNet.replace(/\D/g, "")) || 0;
+  const publicPrice = desiredNetNum > 0 ? CommissionEngine.getPublicPrice(desiredNetNum) : 0;
+  const commission = desiredNetNum > 0 ? CommissionEngine.getCommission(desiredNetNum) : 0;
+
+  function formatCOP(n: number) {
+    return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+  }
 
   function handleSpaceChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setSpaceForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -332,6 +342,46 @@ export default function OfferSpace() {
                     <input type="text" name="address" value={spaceForm.address} onChange={handleSpaceChange}
                       className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30"
                       placeholder="Barrio, calle, referencia..." />
+                  </div>
+
+                  {/* Commission Calculator */}
+                  <div className="border border-[#2C5E8D]/20 rounded-xl overflow-hidden">
+                    <div className="bg-[#2C5E8D] px-4 py-2.5 flex items-center gap-2">
+                      <Calculator className="w-4 h-4 text-white" />
+                      <span className="text-sm font-semibold text-white">Calculadora de precios</span>
+                      <span className="text-xs text-[#AECBE9] ml-1">· Comisión RaumLog: 20%</span>
+                    </div>
+                    <div className="p-4 bg-[#AECBE9]/10 space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-[#2C5E8D] mb-1">
+                          ¿Cuánto quieres recibir tú al mes? (Precio Deseado)
+                        </label>
+                        <input type="text" value={desiredNet} onChange={(e) => setDesiredNet(e.target.value)}
+                          className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 bg-white"
+                          placeholder="ej. 400000" />
+                      </div>
+                      {desiredNetNum > 0 && (
+                        <div className="grid grid-cols-3 gap-3 pt-1">
+                          <div className="text-center p-3 bg-white rounded-xl border border-green-200">
+                            <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium">🙋 Recibirás (neto)</p>
+                            <p className="font-bold text-green-600 text-sm">{formatCOP(desiredNetNum)}</p>
+                          </div>
+                          <div className="text-center p-3 bg-white rounded-xl border border-[#2C5E8D]/20">
+                            <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium">💳 Precio Público</p>
+                            <p className="font-bold text-[#2C5E8D] text-sm">{formatCOP(publicPrice)}</p>
+                          </div>
+                          <div className="text-center p-3 bg-white rounded-xl border border-orange-200">
+                            <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium">📊 Comisión (20%)</p>
+                            <p className="font-bold text-orange-500 text-sm">{formatCOP(commission)}</p>
+                          </div>
+                        </div>
+                      )}
+                      {desiredNetNum > 0 && (
+                        <p className="text-xs text-[#2C5E8D]/50 text-center">
+                          El cliente paga {formatCOP(publicPrice)} y tú recibes {formatCOP(desiredNetNum)} directamente.
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -1,0 +1,55 @@
+Construcción del núcleo lógico de RaumLog. El sistema debe manejar dos tipos de usuarios (Anfitrión y Cliente) y un Administrador.
+
+1. Motor de Comisiones y Transacciones:
+
+Regla de Negocio: La comisión de la plataforma es del 20%.
+
+Lógica de Precios: En el formulario de creación de espacios, cuando el anfitrión ingresa su "Precio Deseado", el sistema debe calcular automáticamente:
+
+Precio Público = Precio Deseado / 0.80
+
+Comisión RaumLog (20%) = Precio Público - Precio Deseado
+
+Visualización: El anfitrión debe ver claramente cuánto recibirá neto y cuánto pagará el cliente final.
+
+2. Flujos de Trabajo Críticos (Workflows):
+
+Módulo de Reserva (Booking): Implementar un calendario de selección de fechas. El sistema debe calcular el total a pagar basándose en la duración de la estadía y el precio público.
+
+Flujo de Check-in Digital: Crear un formulario de "Acta de Entrega" accesible solo tras el pago. Debe permitir cargar hasta 5 fotografías y notas de inventario para documentar el estado de los bienes al ingresar al cuarto útil.
+
+Dashboard del Anfitrión: Panel privado para gestionar "Mis Espacios", ver solicitudes de reserva entrantes (Aprobar/Rechazar) y un resumen de ingresos acumulados.
+
+3. Integración Técnica de Pagos (Wompi Spec):
+
+Tarea: Crear un PaymentService.js que prepare el objeto de transacción para el Widget de Wompi.
+
+Requerimientos: Incluir campos para amount_in_cents, currency (COP), reference e integrity_signature.
+
+Simulación: Implementar un flujo de "Pago Exitoso Simulado" que, al completarse, cambie el estado de la reserva a "Confirmada" y habilite el formulario de Check-in.
+
+4. Seguridad y Confianza (KYC):
+
+Carga de Documentos: Los anfitriones deben poder subir archivos (Cédula y Recibo Público) para validación.
+
+Términos y Condiciones: Incluir un checkbox obligatorio antes del pago con los siguientes pilares:
+
+RaumLog es intermediario; la custodia es del anfitrión.
+
+Prohibido almacenar perecederos, inflamables o artículos ilegales.
+
+La responsabilidad se limita al valor declarado en el Acta de Entrega.
+
+5. Notificaciones y Estados:
+
+Crea una lógica de estados de reserva: PENDIENTE_APROBACION -> APROBADA_POR_ANFITRION -> PAGADA -> EN_ALMACENAMIENTO -> FINALIZADA.
+
+Simular el envío de notificaciones (vía console log) para cada cambio de estado.
+
+Especificaciones Técnicas:
+
+Stack: React + Vite + Tailwind CSS.
+
+Manejo de Estado: Usar Context API o Zustand.
+
+Estética: Mantener fidelidad total a la paleta #2C5E8D, #AECBE9 y las tipografías definidas anteriormente.

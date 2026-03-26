@@ -1,8 +1,8 @@
-# Workspace
+# Workspace — RaumLog
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+**RaumLog** — Spanish-language storage marketplace for Medellín and Bogotá, Colombia. Connects people needing storage (garages, cuartos útiles, bodegas) with hosts. Built as a pnpm monorepo with React + Vite + Tailwind CSS frontend and Express + PostgreSQL backend.
 
 ## Stack
 
@@ -13,85 +13,158 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **API framework**: Express 5
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- **Frontend**: React + Vite + Tailwind CSS
+- **State management**: Zustand with persist middleware
+- **Build**: esbuild (API), Vite (frontend)
 
 ## Structure
 
 ```text
 artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   ├── api-server/         # Express API server
-│   └── raumlog/            # RaumLog landing page (React + Vite + Tailwind)
-├── lib/                    # Shared libraries
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+├── artifacts/
+│   ├── api-server/         # Express API server (port 8080)
+│   │   └── src/routes/
+│   │       ├── admin.ts    # Admin CRUD (JWT-protected)
+│   │       ├── spaces.ts   # Space submission
+│   │       ├── reservations.ts  # Booking + state machine + check-in
+│   │       ├── host.ts     # Host dashboard data
+│   │       └── kyc.ts      # KYC document submission
+│   └── raumlog/            # React frontend
+│       └── src/
+│           ├── pages/
+│           │   ├── Home.tsx
+│           │   ├── FindSpace.tsx     # Space search + booking modal
+│           │   ├── OfferSpace.tsx    # Host registration + KYC
+│           │   ├── HostDashboard.tsx # /dashboard/host
+│           │   ├── AdminLogin.tsx    # /admin/login
+│           │   ├── AdminDashboard.tsx # /admin
+│           │   └── AdminControl.tsx  # /admin/control (superadmin)
+│           ├── lib/
+│           │   ├── api.ts            # All API fetch functions
+│           │   ├── payment-service.ts # PaymentService + CommissionEngine
+│           │   └── notifications.ts  # NotificationService (console.log)
+│           └── store/
+│               └── useStore.ts       # Zustand store (hostEmail, guestInfo, adminToken)
+└── lib/db/src/schema/
+    ├── spaces.ts
+    ├── reservations.ts    # 6-state machine enum
+    └── kyc_submissions.ts
 ```
 
-## TypeScript & Composite Projects
+## DB Schema
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
+### `spaces` table
+- `id`, `ownerName`, `ownerEmail`, `ownerPhone`, `spaceType`, `city`, `address`, `description`
+- `priceDaily`, `priceMonthly`, `priceAnnual` (strings, in COP)
+- `status` enum: `pending` | `approved` | `rejected`
+- `published` boolean (admin can publish after approving)
+- `createdAt`
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+### `reservations` table
+- `id`, `spaceId`, `spaceTitle`, `spaceOwnerEmail`
+- `guestName`, `guestEmail`, `guestPhone`, `itemsDescription`
+- `declaredValue`, `checkIn`, `checkOut`, `days`, `months`
+- `totalPrice`, `hostNetPrice`, `platformCommission`
+- `acceptedTerms` boolean
+- `status` enum: `pending_approval` | `approved_by_host` | `rejected` | `paid` | `in_storage` | `completed`
+- `wompiReference`
+- `checkinNotes`, `checkinPhotos` (JSON array of base64 strings)
+- `createdAt`, `updatedAt`
 
-## Root Scripts
+### `kyc_submissions` table
+- `id`, `hostEmail`, `hostName`, `hostPhone`
+- `cedulaFilename`, `cedulaData` (base64), `rutFilename`, `rutData` (base64)
+- `status` enum: `pending` | `approved` | `rejected`
+- `adminNotes`, `createdAt`, `updatedAt`
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
+## Business Logic
 
-## Packages
+### Commission Engine (20%)
+- Host enters "Precio Deseado" (what they want to receive)
+- Public Price = Desired / 0.80
+- Commission = Public Price × 0.20
+- Host receives 80% of public price paid by guest
+- `CommissionEngine` exported from `artifacts/raumlog/src/lib/payment-service.ts`
 
-### `artifacts/api-server` (`@workspace/api-server`)
+### Reservation State Machine
+```
+PENDIENTE_APROBACION → APROBADA_POR_ANFITRION → PAGADA → EN_ALMACENAMIENTO → FINALIZADA
+      (created)              (host approves)     (paid)   (check-in done)     (checkout)
+```
+- Each transition logs a notification to console via `NotificationService`
+- Demo spaces auto-approve after 2s (simulate host approval)
 
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
+### PaymentService (Wompi Sandbox)
+- Prepares `{ amount_in_cents, currency: "COP", reference, integrity_signature }`
+- SHA-256 integrity signature via `crypto.subtle`
+- Sandbox mode: simulates APPROVED response
+- `reference` format: `RL-{reservationId}-{timestamp}`
 
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+### Digital Check-in (Acta de Entrega)
+- Unlocked only after PAID status
+- Upload up to 5 photos (stored as base64 in DB)
+- Inventory notes text
+- Declared value (limits liability)
+- Completing check-in transitions to IN_STORAGE
 
-### `lib/db` (`@workspace/db`)
+## Auth & Access
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
+- **Admin login**: `POST /api/admin/login` with `ADMIN_PASSWORD` env var → JWT (stored in `sessionStorage`)
+  - `/admin` — Admin Dashboard (approve/reject spaces, view reservations, manage KYC)
+  - `/admin/control` — SuperAdmin (publish/unpublish/delete + all CRUD)
+  - Not linked in main nav
+- **Host login**: email-only (no password), persisted in Zustand store
+  - `/dashboard/host` — view own spaces, approve/reject incoming reservations, earnings summary
+- **JWT_SECRET** env var required for admin JWT signing
 
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
+## T&C Items (Booking Modal)
+1. RaumLog es intermediario; la custodia es del anfitrión
+2. Prohibido almacenar perecederos, inflamables o artículos ilegales
+3. La responsabilidad se limita al valor declarado en el Acta de Entrega
 
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
+## Routes
 
-### `lib/api-spec` (`@workspace/api-spec`)
+### API Routes (`/api`)
+- `POST /spaces` — submit new space
+- `POST /reservations` → creates as `pending_approval`
+- `POST /reservations/:id/approve-host` → `approved_by_host`
+- `POST /reservations/:id/pay` → `paid` + Wompi simulation
+- `POST /reservations/:id/checkin` → `in_storage` + stores photos/notes
+- `POST /reservations/:id/complete` → `completed`
+- `GET /host/spaces?email=` + `GET /host/reservations?email=`
+- `PATCH /host/reservations/:id/status`
+- `POST /kyc` — submit KYC documents
+- `GET /admin/spaces` + `GET /admin/reservations` + `GET /admin/kyc` (JWT)
+- `PATCH /admin/spaces/:id/status` + `PATCH /admin/spaces/:id/publish` + `DELETE /admin/spaces/:id`
+- `PATCH /admin/kyc/:id/status`
 
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
+### Frontend Routes
+- `/` — Home / Landing
+- `/encuentra-tu-espacio` — Find & Book spaces
+- `/ofrece-tu-espacio` — Host registration
+- `/dashboard/host` — Host Panel
+- `/admin/login` → `/admin` → `/admin/control`
+- `/contacto` — Contact
 
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
+## Design Tokens
 
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
+- Primary: `#2C5E8D`
+- Light blue: `#AECBE9`
+- Warm beige (bg): `#D8CFC3`
+- Font: Bebas Neue (headings), system (body)
+- Logo: `public/raumlog-logo-main.png` (transparent bg)
 
-### `lib/api-zod` (`@workspace/api-zod`)
+## Environment Variables
 
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
+- `DATABASE_URL` — auto-provided by Replit PostgreSQL
+- `ADMIN_PASSWORD` — admin panel password
+- `JWT_SECRET` — for admin JWT signing
 
-### `lib/api-client-react` (`@workspace/api-client-react`)
+## Notifications (console.log simulation)
 
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
+`NotificationService` in `src/lib/notifications.ts` logs to console for:
+- Every status transition (state machine)
+- Payment received (with commission breakdown)
+- Check-in / Acta de Entrega completed
 
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+In production, these would be replaced with email/SMS/push integrations.

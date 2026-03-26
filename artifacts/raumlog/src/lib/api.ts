@@ -1,7 +1,7 @@
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 export const API_URL = `${BASE}/api`;
 
-// ── Admin ────────────────────────────────────────────────────────────────────
+// ── Admin ─────────────────────────────────────────────────────────────────────
 
 export async function adminLogin(password: string): Promise<string> {
   const res = await fetch(`${API_URL}/admin/login`, {
@@ -10,19 +10,16 @@ export async function adminLogin(password: string): Promise<string> {
     body: JSON.stringify({ password }),
   });
   if (!res.ok) throw new Error("Contraseña incorrecta");
-  const data = await res.json();
-  return data.token as string;
+  return (await res.json()).token as string;
 }
 
 export async function fetchAdminSpaces(token: string) {
-  const res = await fetch(`${API_URL}/admin/spaces`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await fetch(`${API_URL}/admin/spaces`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error("No autorizado");
   return (await res.json()).spaces;
 }
 
-export async function updateSpaceStatus(token: string, id: number, status: "approved" | "rejected" | "pending") {
+export async function updateSpaceStatus(token: string, id: number, status: string) {
   const res = await fetch(`${API_URL}/admin/spaces/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -49,22 +46,18 @@ export async function deleteSpace(token: string, id: number) {
 }
 
 export async function fetchAdminReservations(token: string) {
-  const res = await fetch(`${API_URL}/admin/reservations`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await fetch(`${API_URL}/admin/reservations`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error("No autorizado");
   return (await res.json()).reservations;
 }
 
 export async function fetchAdminKyc(token: string) {
-  const res = await fetch(`${API_URL}/admin/kyc`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await fetch(`${API_URL}/admin/kyc`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error("No autorizado");
   return (await res.json()).submissions;
 }
 
-export async function updateKycStatus(token: string, id: number, status: "approved" | "rejected", adminNotes?: string) {
+export async function updateKycStatus(token: string, id: number, status: string, adminNotes?: string) {
   const res = await fetch(`${API_URL}/admin/kyc/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -73,7 +66,7 @@ export async function updateKycStatus(token: string, id: number, status: "approv
   if (!res.ok) throw new Error("Error al actualizar KYC");
 }
 
-// ── Spaces ───────────────────────────────────────────────────────────────────
+// ── Spaces ─────────────────────────────────────────────────────────────────────
 
 export async function submitSpace(data: object) {
   const res = await fetch(`${API_URL}/spaces`, {
@@ -85,7 +78,7 @@ export async function submitSpace(data: object) {
   return res.json();
 }
 
-// ── Reservations ─────────────────────────────────────────────────────────────
+// ── Reservations ──────────────────────────────────────────────────────────────
 
 export async function createReservation(data: object) {
   const res = await fetch(`${API_URL}/reservations`, {
@@ -94,6 +87,15 @@ export async function createReservation(data: object) {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Error al crear reserva");
+  return (await res.json()).reservation;
+}
+
+export async function approveReservationByHost(id: number) {
+  const res = await fetch(`${API_URL}/reservations/${id}/approve-host`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Error al aprobar reserva");
   return (await res.json()).reservation;
 }
 
@@ -106,7 +108,21 @@ export async function payReservation(id: number) {
   return res.json();
 }
 
-// ── Host ─────────────────────────────────────────────────────────────────────
+export async function checkinReservation(id: number, data: {
+  checkinNotes: string;
+  checkinPhotos: string[];
+  declaredValue: string;
+}) {
+  const res = await fetch(`${API_URL}/reservations/${id}/checkin`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al registrar check-in");
+  return (await res.json()).reservation;
+}
+
+// ── Host ──────────────────────────────────────────────────────────────────────
 
 export async function fetchHostSpaces(email: string) {
   const res = await fetch(`${API_URL}/host/spaces?email=${encodeURIComponent(email)}`);
@@ -120,7 +136,7 @@ export async function fetchHostReservations(email: string) {
   return (await res.json()).reservations;
 }
 
-export async function updateReservationStatus(id: number, status: "approved" | "rejected", ownerEmail: string) {
+export async function updateReservationStatus(id: number, status: string, ownerEmail: string) {
   const res = await fetch(`${API_URL}/host/reservations/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -130,7 +146,7 @@ export async function updateReservationStatus(id: number, status: "approved" | "
   return (await res.json()).reservation;
 }
 
-// ── KYC ──────────────────────────────────────────────────────────────────────
+// ── KYC ───────────────────────────────────────────────────────────────────────
 
 export async function submitKyc(data: object) {
   const res = await fetch(`${API_URL}/kyc`, {
@@ -152,8 +168,8 @@ export async function generateWompiSignature(
 ): Promise<string> {
   const data = `${reference}${amountInCents}${currency}${integrityKey}`;
   const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(data);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(data));
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }

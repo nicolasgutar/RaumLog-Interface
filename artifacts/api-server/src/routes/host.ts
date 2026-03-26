@@ -30,7 +30,7 @@ router.patch("/host/reservations/:id/status", async (req, res) => {
   const id = Number(req.params["id"]);
   const { status, ownerEmail } = req.body as { status?: string; ownerEmail?: string };
 
-  if (!status || !["approved", "rejected"].includes(status)) {
+  if (!status || !["approved_by_host", "rejected", "completed"].includes(status)) {
     return res.status(400).json({ error: "Estado inválido" });
   }
   if (!ownerEmail) return res.status(400).json({ error: "Email requerido" });
@@ -46,7 +46,7 @@ router.patch("/host/reservations/:id/status", async (req, res) => {
 
   const [updated] = await db
     .update(reservationsTable)
-    .set({ status: status as "approved" | "rejected", updatedAt: new Date() })
+    .set({ status: status as any, updatedAt: new Date() })
     .where(eq(reservationsTable.id, id))
     .returning();
 
