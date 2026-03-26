@@ -6,8 +6,9 @@ import {
 } from "@/lib/api";
 import {
   Globe, EyeOff, CheckCircle, XCircle, Trash2, LogOut,
-  RefreshCw, FileText, Users, Home, CreditCard,
+  RefreshCw, FileText, Users, Home, CreditCard, DollarSign,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type Space = {
   id: number; ownerName: string; ownerEmail: string; ownerPhone: string;
@@ -108,6 +109,9 @@ export default function AdminControl() {
           <p className="text-[#AECBE9] text-sm">RaumLog · Panel de Control</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Link to="/admin/finanzas" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600/80 hover:bg-green-600 text-sm transition-colors font-semibold">
+            <DollarSign className="w-4 h-4" /> Finanzas
+          </Link>
           <button onClick={() => navigate("/admin")} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm transition-colors">
             Panel básico
           </button>

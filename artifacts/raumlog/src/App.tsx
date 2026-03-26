@@ -8,6 +8,7 @@ import MyAccount from "@/pages/MyAccount";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminControl from "@/pages/AdminControl";
+import AdminFinanzas from "@/pages/AdminFinanzas";
 import HostDashboard from "@/pages/HostDashboard";
 import NotFound from "@/pages/not-found";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -30,6 +31,7 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/control" element={<AdminControl />} />
+          <Route path="/admin/finanzas" element={<AdminFinanzas />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

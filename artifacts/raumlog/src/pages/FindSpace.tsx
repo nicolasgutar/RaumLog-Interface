@@ -3,18 +3,23 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
   Search, MapPin, Filter, X, ChevronLeft, ChevronRight,
-  Calendar, CreditCard, CheckCircle, AlertCircle, Upload, FileText,
-  Package, Clock, ThumbsUp, Banknote,
+  Calendar, CreditCard, CheckCircle, AlertCircle, Upload,
+  Package, Clock, ThumbsUp, Banknote, FileText, Shield,
+  Truck, Key, Home, Box, Car, Tv, SlidersHorizontal,
 } from "lucide-react";
 import { createReservation, approveReservationByHost, payReservation, checkinReservation } from "@/lib/api";
 import { PaymentService, CommissionEngine, type BookingBreakdown } from "@/lib/payment-service";
 import { NotificationService } from "@/lib/notifications";
 import { useStore } from "@/store/useStore";
 
+type Category = "General" | "Muebles" | "Cajas" | "Vehículos" | "Electrodomésticos";
+type AccessType = "24/7" | "Con cita" | "Solo entrega";
+
 interface Space {
   id: number; title: string; type: string; size: string; location: string;
   description: string; priceDaily: string; priceMonthly: string; priceAnnual: string;
   rawPriceDaily: number; rawPriceMonthly: number; ownerEmail: string; images: string[];
+  category: Category; accessType: AccessType;
 }
 
 const spaces: Space[] = [
@@ -22,31 +27,37 @@ const spaces: Space[] = [
     description: "Garaje amplio con portón eléctrico, buena iluminación y acceso seguro las 24 horas. Ideal para almacenar vehículos, muebles o mercancía.",
     priceDaily: "$35.000 COP", priceMonthly: "$650.000 COP", priceAnnual: "$6.500.000 COP",
     rawPriceDaily: 35000, rawPriceMonthly: 650000, ownerEmail: "demo@raumlog.com",
+    category: "Vehículos", accessType: "24/7",
     images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80","https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80","https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80"] },
   { id: 2, title: "Cuarto Útil en Laureles", type: "Cuarto Útil", size: "8 m²", location: "Medellín, Laureles",
     description: "Cuarto útil limpio y seco, con buena ventilación. Perfecto para guardar cajas, electrodomésticos o artículos del hogar.",
     priceDaily: "$18.000 COP", priceMonthly: "$320.000 COP", priceAnnual: "$3.200.000 COP",
     rawPriceDaily: 18000, rawPriceMonthly: 320000, ownerEmail: "demo@raumlog.com",
+    category: "Cajas", accessType: "Con cita",
     images: ["https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80","https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80","https://images.unsplash.com/photo-1558618047-3d9b42c24b5d?w=800&q=80"] },
   { id: 3, title: "Bodega Industrial en Itagüí", type: "Bodega", size: "50 m²", location: "Itagüí, Medellín",
     description: "Bodega en zona industrial con fácil acceso vehicular, piso en concreto y techado completo. Ideal para negocios y archivo.",
     priceDaily: "$75.000 COP", priceMonthly: "$1.400.000 COP", priceAnnual: "$14.000.000 COP",
     rawPriceDaily: 75000, rawPriceMonthly: 1400000, ownerEmail: "demo@raumlog.com",
+    category: "General", accessType: "Solo entrega",
     images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80","https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80","https://images.unsplash.com/photo-1620801113793-1e8de77a1a2f?w=800&q=80"] },
   { id: 4, title: "Depósito en Envigado", type: "Depósito", size: "15 m²", location: "Envigado, Medellín",
     description: "Depósito en conjunto residencial cerrado, con vigilancia y cámaras de seguridad. Acceso con código personal.",
     priceDaily: "$25.000 COP", priceMonthly: "$480.000 COP", priceAnnual: "$4.800.000 COP",
     rawPriceDaily: 25000, rawPriceMonthly: 480000, ownerEmail: "demo@raumlog.com",
+    category: "Muebles", accessType: "Con cita",
     images: ["https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80","https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80","https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80"] },
   { id: 5, title: "Garaje Doble en Bello", type: "Garaje", size: "35 m²", location: "Bello, Medellín",
     description: "Garaje doble con espacio para dos vehículos o gran capacidad de almacenamiento. Rejas de seguridad, iluminación LED.",
     priceDaily: "$55.000 COP", priceMonthly: "$1.000.000 COP", priceAnnual: "$10.000.000 COP",
     rawPriceDaily: 55000, rawPriceMonthly: 1000000, ownerEmail: "demo@raumlog.com",
+    category: "Vehículos", accessType: "24/7",
     images: ["https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80","https://images.unsplash.com/photo-1563298723-dcfebaa392e3?w=800&q=80","https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80"] },
   { id: 6, title: "Mini Bodega en Sabaneta", type: "Bodega", size: "12 m²", location: "Sabaneta, Medellín",
     description: "Mini bodega en zona comercial, seca y segura. Contrato flexible por días, meses o año.",
     priceDaily: "$22.000 COP", priceMonthly: "$400.000 COP", priceAnnual: "$4.000.000 COP",
     rawPriceDaily: 22000, rawPriceMonthly: 400000, ownerEmail: "demo@raumlog.com",
+    category: "Electrodomésticos", accessType: "Solo entrega",
     images: ["https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&q=80","https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80","https://images.unsplash.com/photo-1620801113793-1e8de77a1a2f?w=800&q=80"] },
 ];
 
@@ -68,22 +79,27 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-type ModalStep = "info" | "booking" | "processing" | "payment" | "checkin" | "success";
+function calcProration(checkIn: string, months: number, monthlyPrice: number) {
+  if (!checkIn || months === 0) return null;
+  const date = new Date(checkIn + "T12:00:00");
+  const dayOfMonth = date.getDate();
+  if (dayOfMonth === 1) return null;
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysRemaining = daysInMonth - dayOfMonth + 1;
+  const proratedAmount = Math.round((daysRemaining / daysInMonth) * monthlyPrice);
+  const fullMonths = Math.max(0, months - 1);
+  return { daysRemaining, daysInMonth, proratedAmount, fullMonths, fullMonthsAmount: fullMonths * monthlyPrice };
+}
 
-const STEP_LABELS: Record<ModalStep, string> = {
-  info: "Detalle",
-  booking: "Reservar",
-  processing: "Aprobación",
-  payment: "Pago",
-  checkin: "Check-in",
-  success: "Listo",
-};
+type ModalStep = "info" | "booking" | "processing" | "payment" | "contract" | "checkin" | "success";
 
 const STATUS_FLOW = [
-  { key: "pending_approval", label: "Pendiente de aprobación", icon: Clock },
-  { key: "approved_by_host", label: "Aprobada por anfitrión", icon: ThumbsUp },
+  { key: "pending_approval", label: "Pendiente", icon: Clock },
+  { key: "approved_by_host", label: "Aprobada", icon: ThumbsUp },
   { key: "paid", label: "Pagada", icon: Banknote },
-  { key: "in_storage", label: "En almacenamiento", icon: Package },
+  { key: "in_storage", label: "Almacenando", icon: Package },
 ];
 
 function StatusTracker({ current }: { current: string }) {
@@ -95,7 +111,7 @@ function StatusTracker({ current }: { current: string }) {
         const done = i <= idx;
         return (
           <div key={s.key} className="flex items-center flex-1">
-            <div className={`flex flex-col items-center gap-1 flex-shrink-0 ${i === 0 ? "" : ""}`}>
+            <div className="flex flex-col items-center gap-1 flex-shrink-0">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${done ? "bg-[#2C5E8D]" : "bg-gray-200"}`}>
                 <Icon className={`w-3.5 h-3.5 ${done ? "text-white" : "text-gray-400"}`} />
               </div>
@@ -107,6 +123,186 @@ function StatusTracker({ current }: { current: string }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const CATEGORY_ICONS: Record<Category, any> = {
+  General: Box, Muebles: Home, Cajas: Package, Vehículos: Car, Electrodomésticos: Tv,
+};
+const ACCESS_ICONS: Record<AccessType, any> = {
+  "24/7": Key, "Con cita": Calendar, "Solo entrega": Truck,
+};
+
+function ContractView({ space, guestName, guestEmail, guestPhone, checkIn, checkOut, days, months, publicPrice, platformCut, breakdown, reservationId, wompiRef }: {
+  space: Space; guestName: string; guestEmail: string; guestPhone: string;
+  checkIn: string; checkOut: string; days: number; months: number;
+  publicPrice: number; platformCut: number; breakdown: BookingBreakdown;
+  reservationId: number | null; wompiRef: string;
+}) {
+  const now = new Date();
+  const contractNo = `RL-CONT-${reservationId || "000"}-${now.getFullYear()}`;
+  const dateStr = now.toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" });
+
+  return (
+    <div className="border border-[#2C5E8D]/20 rounded-xl p-5 text-sm text-[#2C5E8D] space-y-4 bg-white">
+      <div className="flex items-center justify-between border-b border-[#AECBE9]/40 pb-3">
+        <div>
+          <p className="font-bold text-lg text-[#1a3d5c]">CONTRATO DE ALMACENAMIENTO COLABORATIVO</p>
+          <p className="text-xs text-[#2C5E8D]/50">N.° {contractNo} · Emitido: {dateStr}</p>
+        </div>
+        <Shield className="w-8 h-8 text-[#2C5E8D]/30" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-[#AECBE9]/10 rounded-lg p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#2C5E8D]/60 mb-2">DEPOSITANTE (Cliente)</p>
+          <p className="font-semibold">{guestName}</p>
+          <p className="text-xs text-[#2C5E8D]/70">{guestEmail}</p>
+          {guestPhone && <p className="text-xs text-[#2C5E8D]/70">{guestPhone}</p>}
+        </div>
+        <div className="bg-[#AECBE9]/10 rounded-lg p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#2C5E8D]/60 mb-2">DEPOSITARIO (Anfitrión)</p>
+          <p className="font-semibold">{space.ownerEmail}</p>
+          <p className="text-xs text-[#2C5E8D]/70">Gestionado por RaumLog S.A.S.</p>
+        </div>
+      </div>
+
+      <div className="bg-[#AECBE9]/10 rounded-lg p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#2C5E8D]/60 mb-2">ESPACIO DE ALMACENAMIENTO</p>
+        <p className="font-semibold">{space.title}</p>
+        <p className="text-xs text-[#2C5E8D]/70">{space.location} · {space.size} · {space.type}</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-green-50 border border-green-100 rounded-lg p-3 text-xs">
+          <p className="font-semibold text-green-800 mb-1">Fecha de ingreso</p>
+          <p className="text-green-700">{checkIn}</p>
+        </div>
+        <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-xs">
+          <p className="font-semibold text-red-800 mb-1">Fecha de salida</p>
+          <p className="text-red-700">{checkOut}</p>
+        </div>
+      </div>
+
+      <div className="border border-[#AECBE9]/40 rounded-lg p-3 space-y-1.5 text-xs">
+        <p className="font-semibold text-[#2C5E8D] mb-2">CONDICIONES ECONÓMICAS</p>
+        <div className="flex justify-between">
+          <span className="text-[#2C5E8D]/70">Duración pactada</span>
+          <span className="font-medium">{months > 0 ? `${months} meses (${days} días)` : `${days} días`}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-[#2C5E8D]/70">Precio mensual del espacio</span>
+          <span className="font-medium">{space.priceMonthly}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-[#2C5E8D]/70">Comisión intermediación RaumLog</span>
+          <span className="font-medium">{formatCOP(platformCut)} {breakdown.isLongStay ? "(1 mes, larga estancia)" : "(20%)"}</span>
+        </div>
+        <div className="flex justify-between font-bold text-[#2C5E8D] pt-1 border-t border-[#AECBE9]/30">
+          <span>VALOR TOTAL PAGADO</span>
+          <span>{formatCOP(publicPrice)}</span>
+        </div>
+        {wompiRef && (
+          <p className="text-[#2C5E8D]/40 font-mono">Ref. pago: {wompiRef}</p>
+        )}
+      </div>
+
+      <div className="text-xs text-[#2C5E8D]/60 space-y-1.5 border-t border-[#AECBE9]/30 pt-3">
+        <p><strong className="text-[#2C5E8D]">Cláusula 1 – Objeto:</strong> El Depositario se compromete a guardar los bienes del Depositante en el espacio descrito, en las condiciones pactadas y por la duración indicada.</p>
+        <p><strong className="text-[#2C5E8D]">Cláusula 2 – Intermediación:</strong> RaumLog S.A.S. actúa como plataforma intermediaria. La custodia física es responsabilidad exclusiva del Depositario.</p>
+        <p><strong className="text-[#2C5E8D]">Cláusula 3 – Responsabilidad:</strong> La responsabilidad máxima está limitada al valor declarado en el Acta de Entrega firmada al momento del check-in.</p>
+        <p><strong className="text-[#2C5E8D]">Cláusula 4 – Prohibiciones:</strong> Queda expresamente prohibido almacenar alimentos perecederos, sustancias inflamables, materiales ilegales o animales vivos.</p>
+        <p><strong className="text-[#2C5E8D]">Cláusula 5 – Terminación:</strong> El contrato finaliza en la fecha de salida pactada. La prórroga requiere nueva solicitud y pago.</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 pt-2">
+        <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
+          <p className="font-semibold text-[#2C5E8D]">{guestName}</p>
+          <p>Depositante · Firma electrónica</p>
+        </div>
+        <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
+          <p className="font-semibold text-[#2C5E8D]">RaumLog S.A.S.</p>
+          <p>En representación del Depositario</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FichaDeposito({ space, guestName, guestEmail, checkIn, checkOut, declaredValue, checkinNotes, photoCount, reservationId }: {
+  space: Space; guestName: string; guestEmail: string; checkIn: string; checkOut: string;
+  declaredValue: string; checkinNotes: string; photoCount: number; reservationId: number | null;
+}) {
+  const now = new Date();
+  const fichaNo = `RL-FICHA-${reservationId || "000"}-${now.getFullYear()}`;
+  const dateStr = now.toLocaleString("es-CO", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="border-2 border-[#2C5E8D]/20 rounded-xl p-5 text-sm text-[#2C5E8D] space-y-4 bg-[#AECBE9]/5">
+      <div className="flex items-center justify-between border-b border-[#AECBE9]/40 pb-3">
+        <div>
+          <p className="font-bold text-lg text-[#1a3d5c]">FICHA DE DEPÓSITO</p>
+          <p className="text-xs text-[#2C5E8D]/50">N.° {fichaNo} · {dateStr}</p>
+        </div>
+        <FileText className="w-8 h-8 text-[#2C5E8D]/30" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <p className="font-semibold text-[#2C5E8D]/60 uppercase tracking-wide mb-1">Cliente</p>
+          <p className="font-semibold">{guestName}</p>
+          <p className="text-[#2C5E8D]/70">{guestEmail}</p>
+        </div>
+        <div>
+          <p className="font-semibold text-[#2C5E8D]/60 uppercase tracking-wide mb-1">Espacio</p>
+          <p className="font-semibold">{space.title}</p>
+          <p className="text-[#2C5E8D]/70">{space.location}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-xs">
+        <div className="bg-white border border-[#AECBE9]/40 rounded-lg p-3 text-center">
+          <p className="text-[#2C5E8D]/50 mb-1">Ingreso</p>
+          <p className="font-bold">{checkIn}</p>
+        </div>
+        <div className="bg-white border border-[#AECBE9]/40 rounded-lg p-3 text-center">
+          <p className="text-[#2C5E8D]/50 mb-1">Salida</p>
+          <p className="font-bold">{checkOut}</p>
+        </div>
+        <div className="bg-white border border-[#AECBE9]/40 rounded-lg p-3 text-center">
+          <p className="text-[#2C5E8D]/50 mb-1">Fotos</p>
+          <p className="font-bold">{photoCount} adjunta(s)</p>
+        </div>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs">
+        <p className="font-semibold text-amber-800 mb-1">Valor declarado de los bienes</p>
+        <p className="text-amber-900 text-base font-bold">{formatCOP(Number(declaredValue) || 0)}</p>
+        <p className="text-amber-700 mt-1">La responsabilidad máxima está limitada a este valor.</p>
+      </div>
+
+      {checkinNotes && (
+        <div className="bg-white border border-[#AECBE9]/40 rounded-lg p-3 text-xs">
+          <p className="font-semibold text-[#2C5E8D]/70 uppercase tracking-wide mb-2">Inventario y estado de los bienes</p>
+          <p className="text-[#2C5E8D]/80 leading-relaxed">{checkinNotes}</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4 pt-2">
+        <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
+          <p className="font-semibold text-[#2C5E8D]">{guestName}</p>
+          <p>Firma electrónica del cliente</p>
+        </div>
+        <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
+          <p className="font-semibold text-[#2C5E8D]">RaumLog S.A.S.</p>
+          <p>Plataforma intermediaria</p>
+        </div>
+      </div>
+
+      <p className="text-[9px] text-center text-[#2C5E8D]/30 border-t border-[#AECBE9]/20 pt-2">
+        Este documento tiene validez contractual como soporte del estado en que se recibieron los bienes al inicio del período de almacenamiento. Generado automáticamente por RaumLog.
+      </p>
     </div>
   );
 }
@@ -129,6 +325,8 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
   const [wompiResult, setWompiResult] = useState<any>(null);
   const [checkinNotes, setCheckinNotes] = useState("");
   const [checkinPhotos, setCheckinPhotos] = useState<File[]>([]);
+  const [savedCheckinNotes, setSavedCheckinNotes] = useState("");
+  const [savedPhotoCount, setSavedPhotoCount] = useState(0);
 
   const days = daysBetween(checkIn, checkOut);
   const months = Math.floor(days / 30);
@@ -138,6 +336,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
   const publicPrice = breakdown.publicTotal;
   const hostNet = breakdown.hostNetTotal;
   const platformCut = breakdown.commission;
+  const proration = calcProration(checkIn, months, space.rawPriceMonthly);
 
   const prev = () => setCurrentImg((i) => (i === 0 ? space.images.length - 1 : i - 1));
   const next = () => setCurrentImg((i) => (i === space.images.length - 1 ? 0 : i + 1));
@@ -148,14 +347,9 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
     setLoading(true);
     try {
       const reservation = await createReservation({
-        spaceId: space.id,
-        spaceTitle: space.title,
-        spaceOwnerEmail: space.ownerEmail,
-        guestName: guestInfo.name,
-        guestEmail: guestInfo.email,
-        guestPhone: guestInfo.phone,
-        itemsDescription: itemsDesc,
-        declaredValue: declaredValue || "0",
+        spaceId: space.id, spaceTitle: space.title, spaceOwnerEmail: space.ownerEmail,
+        guestName: guestInfo.name, guestEmail: guestInfo.email, guestPhone: guestInfo.phone,
+        itemsDescription: itemsDesc, declaredValue: declaredValue || "0",
         checkIn, checkOut, days, months,
         totalPrice: String(publicPrice),
         hostNetPrice: String(Math.round(hostNet)),
@@ -168,8 +362,6 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
       });
       setStep("processing");
       setReservationStatus("pending_approval");
-
-      // Auto-approve for demo spaces
       await new Promise((r) => setTimeout(r, 2000));
       await approveReservationByHost(reservation.id);
       setReservationStatus("approved_by_host");
@@ -178,7 +370,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
       });
       await new Promise((r) => setTimeout(r, 1000));
       setStep("payment");
-    } catch (e) {
+    } catch {
       alert("Error al crear la reserva. Intenta de nuevo.");
     } finally {
       setLoading(false);
@@ -189,10 +381,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
     if (!reservationId) return;
     setLoading(true);
     try {
-      const payload = await PaymentService.prepare(
-        reservationId, publicPrice,
-        guestInfo.email, guestInfo.name, guestInfo.phone
-      );
+      const payload = await PaymentService.prepare(reservationId, publicPrice, guestInfo.email, guestInfo.name, guestInfo.phone);
       console.log("[RaumLog PaymentService] Payload Wompi:", JSON.stringify(payload, null, 2));
       const result = await payReservation(reservationId);
       setWompiResult(result.wompiResponse);
@@ -201,7 +390,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
       NotificationService.onStatusChange(reservationId, "paid", {
         guestName: guestInfo.name, guestEmail: guestInfo.email, spaceTitle: space.title,
       });
-      setStep("checkin");
+      setStep("contract");
     } catch {
       alert("Error al procesar el pago. Intenta de nuevo.");
     } finally {
@@ -214,11 +403,9 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
     setLoading(true);
     try {
       const photoBase64s = await Promise.all(checkinPhotos.map(fileToBase64));
-      await checkinReservation(reservationId, {
-        checkinNotes,
-        checkinPhotos: photoBase64s,
-        declaredValue,
-      });
+      await checkinReservation(reservationId, { checkinNotes, checkinPhotos: photoBase64s, declaredValue });
+      setSavedCheckinNotes(checkinNotes);
+      setSavedPhotoCount(photoBase64s.length);
       setReservationStatus("in_storage");
       NotificationService.onCheckin(reservationId, photoBase64s.length, space.title);
       NotificationService.onStatusChange(reservationId, "in_storage", {
@@ -244,17 +431,34 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
     <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
 
-        {/* ── SUCCESS ── */}
+        {/* ── SUCCESS + FICHA DE DEPÓSITO ── */}
         {step === "success" && (
-          <div className="p-10 text-center">
-            <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
-            <h2 className="font-heading text-2xl text-[#2C5E8D] mb-2">¡Check-in completado!</h2>
-            <StatusTracker current="in_storage" />
-            <p className="text-[#2C5E8D]/70 mb-2">
-              Tu espacio en <strong>{space.title}</strong> está activo. Tus bienes están en almacenamiento.
-            </p>
-            <p className="text-xs text-[#2C5E8D]/40 mt-2">Confirmación enviada a {guestInfo.email}</p>
-            <button onClick={onClose} className="mt-6 px-8 py-3 bg-[#2C5E8D] text-white font-semibold rounded-lg hover:bg-[#1a3d5c] transition-colors">
+          <div className="p-6 sm:p-8">
+            <div className="text-center mb-6">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-3" />
+              <h2 className="font-heading text-2xl text-[#2C5E8D] mb-1">¡Check-in completado!</h2>
+              <StatusTracker current="in_storage" />
+              <p className="text-[#2C5E8D]/70 text-sm">
+                Tu espacio en <strong>{space.title}</strong> está activo.
+              </p>
+              <p className="text-xs text-[#2C5E8D]/40 mt-1">Confirmación enviada a {guestInfo.email}</p>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-[#2C5E8D]" />
+                <h3 className="font-semibold text-[#1a3d5c] text-sm">Ficha de Depósito</h3>
+                <span className="text-xs text-[#2C5E8D]/50">· Guarda este documento como soporte legal</span>
+              </div>
+              <FichaDeposito
+                space={space} guestName={guestInfo.name} guestEmail={guestInfo.email}
+                checkIn={checkIn} checkOut={checkOut} declaredValue={declaredValue}
+                checkinNotes={savedCheckinNotes} photoCount={savedPhotoCount}
+                reservationId={reservationId}
+              />
+            </div>
+
+            <button onClick={onClose} className="w-full px-8 py-3 bg-[#2C5E8D] text-white font-semibold rounded-lg hover:bg-[#1a3d5c] transition-colors">
               Cerrar
             </button>
           </div>
@@ -275,20 +479,17 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                 <p className="text-green-600 text-xs">Ref: {wompiResult.reference} · {formatCOP(publicPrice)}</p>
               </div>
             )}
-
             <p className="text-[#2C5E8D]/70 text-sm mb-5">
-              Documenta el estado de tus bienes al ingresar al espacio. Este Acta tiene validez contractual.
+              Documenta el estado de tus bienes al ingresar. Este Acta tiene validez contractual y será tu soporte legal.
             </p>
-
             <div className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Valor declarado de los bienes (COP) *</label>
                 <input type="text" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)}
                   className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 text-sm"
                   placeholder="ej. 2000000" />
-                <p className="text-xs text-[#2C5E8D]/50 mt-1">La responsabilidad se limita al valor declarado en esta Acta.</p>
+                <p className="text-xs text-[#2C5E8D]/50 mt-1">La responsabilidad se limita al valor declarado.</p>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-[#2C5E8D] mb-2">
                   Fotos del estado de los bienes ({checkinPhotos.length}/5)
@@ -305,26 +506,64 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                     <label className="aspect-square rounded-lg border-2 border-dashed border-[#AECBE9] flex flex-col items-center justify-center cursor-pointer hover:border-[#2C5E8D] transition-colors">
                       <Upload className="w-5 h-5 text-[#AECBE9] mb-1" />
                       <span className="text-[10px] text-[#2C5E8D]/50">Agregar</span>
-                      <input type="file" accept="image/*" multiple className="sr-only"
-                        onChange={(e) => addPhoto(e.target.files)} />
+                      <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => addPhoto(e.target.files)} />
                     </label>
                   )}
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Inventario y notas del estado</label>
+                <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Inventario y estado de los bienes</label>
                 <textarea value={checkinNotes} onChange={(e) => setCheckinNotes(e.target.value)} rows={3}
                   className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 text-sm resize-none"
                   placeholder="Ej: 3 cajas de libros (buen estado), sofá 2 puestos (rayado en el brazo derecho), 2 maletas..." />
               </div>
-
               <button onClick={handleCheckin} disabled={loading || !declaredValue}
                 className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors">
                 {loading ? "Registrando..." : "Firmar Acta de Entrega →"}
               </button>
-              <button onClick={() => setStep("success")} className="w-full py-2 text-[#2C5E8D]/50 hover:text-[#2C5E8D] text-sm transition-colors">
+              <button onClick={() => { setSavedCheckinNotes(""); setSavedPhotoCount(0); setStep("success"); }}
+                className="w-full py-2 text-[#2C5E8D]/50 hover:text-[#2C5E8D] text-sm transition-colors">
                 Omitir por ahora
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── CONTRACT ── */}
+        {step === "contract" && (
+          <div className="p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#2C5E8D]" />
+                <h2 className="font-heading text-xl text-[#2C5E8D]">Contrato de Almacenamiento</h2>
+              </div>
+              <button onClick={onClose} className="text-[#2C5E8D]/40 hover:text-[#2C5E8D]"><X className="w-5 h-5" /></button>
+            </div>
+            <StatusTracker current="paid" />
+
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-5 text-sm flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <div>
+                <p className="text-green-700 font-semibold">¡Pago procesado con éxito!</p>
+                {wompiResult && <p className="text-green-600 text-xs">Ref. Wompi: {wompiResult.reference}</p>}
+              </div>
+            </div>
+
+            <p className="text-sm text-[#2C5E8D]/70 mb-4">
+              Tu contrato ha sido generado automáticamente. Guárdalo como comprobante de tu almacenamiento.
+            </p>
+
+            <ContractView
+              space={space} guestName={guestInfo.name} guestEmail={guestInfo.email} guestPhone={guestInfo.phone}
+              checkIn={checkIn} checkOut={checkOut} days={days} months={months}
+              publicPrice={publicPrice} platformCut={platformCut} breakdown={breakdown}
+              reservationId={reservationId} wompiRef={wompiResult?.reference || ""}
+            />
+
+            <div className="mt-5">
+              <button onClick={() => setStep("checkin")}
+                className="w-full py-3.5 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-bold rounded-lg transition-colors">
+                Continuar al Check-in →
               </button>
             </div>
           </div>
@@ -344,18 +583,36 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
               <span className="text-green-700">El anfitrión aprobó tu solicitud. Puedes continuar con el pago.</span>
             </div>
 
-            <div className={`rounded-xl p-4 mb-5 text-sm space-y-1 ${breakdown.isLongStay ? "bg-green-50 border border-green-200" : "bg-[#AECBE9]/20"}`}>
+            <div className={`rounded-xl p-4 mb-5 text-sm space-y-2 ${breakdown.isLongStay ? "bg-green-50 border border-green-200" : "bg-[#AECBE9]/20"}`}>
               {breakdown.isLongStay && (
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-1">
                   <span>🎉</span>
                   <span className="font-semibold text-green-700 text-xs uppercase tracking-wide">¡Beneficio por larga estancia aplicado!</span>
                 </div>
               )}
               <p className="font-semibold text-[#2C5E8D] text-base">{space.title}</p>
-              <p className="text-[#2C5E8D]/70">{checkIn} → {checkOut}</p>
-              <p className="text-[#2C5E8D]/70">
-                {months > 0 ? `${months} meses × ${space.priceMonthly}` : `${days} días × ${space.priceDaily}`}
-              </p>
+              <p className="text-[#2C5E8D]/70 text-xs">{checkIn} → {checkOut} · {months > 0 ? `${months} meses` : `${days} días`}</p>
+
+              {proration && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-xs mt-1">
+                  <p className="font-semibold text-blue-800 mb-1">📅 Prorrateo del primer mes</p>
+                  <div className="text-blue-700 space-y-0.5">
+                    <div className="flex justify-between">
+                      <span>Primer pago ({proration.daysRemaining} días de {proration.daysInMonth})</span>
+                      <span>{formatCOP(proration.proratedAmount)}</span>
+                    </div>
+                    {proration.fullMonths > 0 && (
+                      <div className="flex justify-between">
+                        <span>{proration.fullMonths} meses completos siguientes</span>
+                        <span>{formatCOP(proration.fullMonthsAmount)}</span>
+                      </div>
+                    )}
+                    <p className="text-blue-600 text-[10px] mt-1">
+                      Los pagos futuros se alinearán al día 1 de cada mes.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="border border-[#2C5E8D]/20 rounded-xl p-5 mb-5">
@@ -424,9 +681,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
               <h2 className="font-heading text-xl text-[#2C5E8D]">Reservar: {space.title}</h2>
               <button onClick={onClose} className="text-[#2C5E8D]/40 hover:text-[#2C5E8D]"><X className="w-5 h-5" /></button>
             </div>
-
             <div className="space-y-5">
-              {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Fecha de ingreso *</label>
@@ -440,7 +695,6 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                 </div>
               </div>
 
-              {/* Price summary */}
               {days > 0 && (
                 <div className={`rounded-xl p-4 text-sm space-y-2 ${breakdown.isLongStay ? "bg-green-50 border border-green-200" : "bg-[#AECBE9]/20"}`}>
                   {breakdown.isLongStay && (
@@ -453,6 +707,15 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                     <span>{months > 0 ? `${months} meses × ${space.priceMonthly}` : `${days} días × ${space.priceDaily}`}</span>
                     <span>{formatCOP(publicPrice)}</span>
                   </div>
+                  {proration && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs">
+                      <p className="text-blue-700 font-semibold mb-0.5">Prorrateo aplicado</p>
+                      <p className="text-blue-600">
+                        1er pago: {formatCOP(proration.proratedAmount)} ({proration.daysRemaining} días restantes del mes)
+                        {proration.fullMonths > 0 && ` · luego ${proration.fullMonths} mes(es) completo(s) × ${space.priceMonthly}`}
+                      </p>
+                    </div>
+                  )}
                   {breakdown.isLongStay ? (
                     <>
                       <div className="flex justify-between text-green-700 text-xs bg-green-100 rounded-lg px-3 py-1.5">
@@ -483,7 +746,6 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                 </div>
               )}
 
-              {/* Guest info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Tu nombre *</label>
@@ -509,28 +771,27 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                     placeholder="Muebles, cajas, electrodomésticos..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Valor declarado de los bienes (COP)</label>
+                  <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Valor declarado (COP)</label>
                   <input type="text" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)}
                     className="w-full border border-[#AECBE9] rounded-lg px-3 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 text-sm"
                     placeholder="ej. 2000000" />
                 </div>
               </div>
 
-              {/* Enhanced T&C */}
               <div className={`border rounded-xl p-4 ${termsError ? "border-red-300 bg-red-50" : "border-[#AECBE9]/60 bg-[#AECBE9]/10"}`}>
-                <p className="text-xs font-semibold text-[#2C5E8D] mb-2 uppercase tracking-wide">Términos y Condiciones de Almacenamiento</p>
+                <p className="text-xs font-semibold text-[#2C5E8D] mb-2 uppercase tracking-wide">Términos y Condiciones</p>
                 <ul className="text-xs text-[#2C5E8D]/70 space-y-1.5 mb-3 list-none">
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2C5E8D]/40 mt-1.5 flex-shrink-0" />
-                    <span><strong className="text-[#2C5E8D]">Intermediario:</strong> RaumLog actúa como plataforma intermediaria. La custodia física de los bienes es responsabilidad del anfitrión.</span>
+                    <span><strong className="text-[#2C5E8D]">Intermediario:</strong> RaumLog actúa como plataforma intermediaria. La custodia física es responsabilidad del anfitrión.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2C5E8D]/40 mt-1.5 flex-shrink-0" />
-                    <span><strong className="text-[#2C5E8D]">Prohibido almacenar:</strong> Alimentos perecederos, materiales inflamables o explosivos, sustancias ilegales, animales vivos o artículos con mal olor.</span>
+                    <span><strong className="text-[#2C5E8D]">Prohibido:</strong> Alimentos perecederos, inflamables, sustancias ilegales, animales vivos.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2C5E8D]/40 mt-1.5 flex-shrink-0" />
-                    <span><strong className="text-[#2C5E8D]">Responsabilidad:</strong> La responsabilidad de RaumLog y del anfitrión se limita al valor declarado en el Acta de Entrega firmada al momento del check-in.</span>
+                    <span><strong className="text-[#2C5E8D]">Responsabilidad:</strong> Limitada al valor declarado en el Acta de Entrega.</span>
                   </li>
                 </ul>
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -596,8 +857,18 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
             <div className="p-5">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                  <span className="text-xs bg-[#AECBE9]/40 text-[#2C5E8D] px-2 py-1 rounded font-medium">{space.type}</span>
-                  <h2 className="font-heading text-2xl text-[#1a3d5c] mt-2">{space.title}</h2>
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <span className="text-xs bg-[#AECBE9]/40 text-[#2C5E8D] px-2 py-1 rounded font-medium">{space.type}</span>
+                    <span className="text-xs bg-[#2C5E8D]/10 text-[#2C5E8D] px-2 py-1 rounded font-medium flex items-center gap-1">
+                      {(() => { const Icon = CATEGORY_ICONS[space.category]; return <Icon className="w-3 h-3" />; })()}
+                      {space.category}
+                    </span>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium flex items-center gap-1">
+                      {(() => { const Icon = ACCESS_ICONS[space.accessType]; return <Icon className="w-3 h-3" />; })()}
+                      {space.accessType}
+                    </span>
+                  </div>
+                  <h2 className="font-heading text-2xl text-[#1a3d5c]">{space.title}</h2>
                   <p className="text-[#2C5E8D]/60 text-sm flex items-center gap-1 mt-1">
                     <MapPin className="w-4 h-4" /> {space.location} · {space.size}
                   </p>
@@ -608,17 +879,17 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
               <div className="grid grid-cols-3 gap-3 mb-6">
                 <div className="bg-[#AECBE9]/20 rounded-xl p-4 text-center">
                   <Calendar className="w-5 h-5 text-[#2C5E8D] mx-auto mb-1" />
-                  <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium uppercase tracking-wide">Precio Diario</p>
+                  <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium uppercase tracking-wide">Diario</p>
                   <p className="font-bold text-[#2C5E8D] text-sm">{space.priceDaily}</p>
                 </div>
                 <div className="bg-[#2C5E8D]/10 rounded-xl p-4 text-center border-2 border-[#2C5E8D]/20">
                   <Calendar className="w-5 h-5 text-[#2C5E8D] mx-auto mb-1" />
-                  <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium uppercase tracking-wide">Precio Mensual</p>
+                  <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium uppercase tracking-wide">Mensual</p>
                   <p className="font-bold text-[#2C5E8D] text-sm">{space.priceMonthly}</p>
                 </div>
                 <div className="bg-[#AECBE9]/20 rounded-xl p-4 text-center">
                   <Calendar className="w-5 h-5 text-[#2C5E8D] mx-auto mb-1" />
-                  <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium uppercase tracking-wide">Precio Anual</p>
+                  <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium uppercase tracking-wide">Anual</p>
                   <p className="font-bold text-[#2C5E8D] text-sm">{space.priceAnnual}</p>
                 </div>
               </div>
@@ -635,16 +906,47 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
   );
 }
 
+const ALL_CATEGORIES: Category[] = ["General", "Muebles", "Cajas", "Vehículos", "Electrodomésticos"];
+const ALL_ACCESS: AccessType[] = ["24/7", "Con cita", "Solo entrega"];
+
 export default function FindSpace() {
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
   const [search, setSearch] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCategories, setFilterCategories] = useState<Category[]>([]);
+  const [filterAccess, setFilterAccess] = useState<AccessType[]>([]);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
 
-  const filtered = search.trim()
-    ? spaces.filter((s) =>
-        s.location.toLowerCase().includes(search.toLowerCase()) ||
-        s.type.toLowerCase().includes(search.toLowerCase()) ||
-        s.title.toLowerCase().includes(search.toLowerCase()))
-    : spaces;
+  function toggleCategory(c: Category) {
+    setFilterCategories((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+    );
+  }
+  function toggleAccess(a: AccessType) {
+    setFilterAccess((prev) =>
+      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+    );
+  }
+  function clearFilters() {
+    setFilterCategories([]); setFilterAccess([]); setMinPrice(""); setMaxPrice("");
+  }
+
+  const activeFilterCount =
+    filterCategories.length + filterAccess.length +
+    (minPrice ? 1 : 0) + (maxPrice ? 1 : 0);
+
+  const filtered = spaces.filter((s) => {
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      if (!s.location.toLowerCase().includes(q) && !s.type.toLowerCase().includes(q) && !s.title.toLowerCase().includes(q)) return false;
+    }
+    if (filterCategories.length > 0 && !filterCategories.includes(s.category)) return false;
+    if (filterAccess.length > 0 && !filterAccess.includes(s.accessType)) return false;
+    if (minPrice && s.rawPriceMonthly < Number(minPrice)) return false;
+    if (maxPrice && s.rawPriceMonthly > Number(maxPrice)) return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -671,43 +973,138 @@ export default function FindSpace() {
 
         <section className="py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading text-2xl text-[#2C5E8D] uppercase">
                 Espacios disponibles
                 {search && <span className="text-base font-normal ml-2 normal-case">· "{search}"</span>}
               </h2>
-              <button className="flex items-center gap-2 text-[#2C5E8D] border border-[#AECBE9] px-4 py-2 rounded-lg hover:bg-[#AECBE9]/20 transition-colors text-sm">
-                <Filter className="w-4 h-4" /> Filtros
+              <button
+                onClick={() => setShowFilters((v) => !v)}
+                className={`flex items-center gap-2 text-sm border px-4 py-2 rounded-lg transition-colors ${activeFilterCount > 0 ? "bg-[#2C5E8D] text-white border-[#2C5E8D]" : "text-[#2C5E8D] border-[#AECBE9] hover:bg-[#AECBE9]/20"}`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                Filtros
+                {activeFilterCount > 0 && (
+                  <span className="bg-white text-[#2C5E8D] w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
               </button>
             </div>
-            {filtered.length === 0
-              ? <div className="text-center py-20 text-[#2C5E8D]/50">No se encontraron espacios para "{search}".</div>
-              : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filtered.map((space) => (
-                    <article key={space.id} className="bg-white rounded-2xl shadow hover:shadow-md transition-shadow overflow-hidden">
-                      <div className="relative">
-                        <img src={space.images[0]} alt={space.title} className="w-full h-48 object-cover" />
-                        <span className="absolute top-3 left-3 text-xs bg-white/90 text-[#2C5E8D] px-2 py-1 rounded font-medium shadow-sm">
-                          {space.images.length} fotos
-                        </span>
-                      </div>
-                      <div className="p-5">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs bg-[#AECBE9]/40 text-[#2C5E8D] px-2 py-1 rounded font-medium">{space.type}</span>
-                          <span className="font-bold text-[#2C5E8D] text-sm">{space.priceMonthly}<span className="font-normal text-xs text-[#2C5E8D]/60">/mes</span></span>
-                        </div>
-                        <h3 className="font-semibold text-[#1a3d5c] text-lg mb-1">{space.title}</h3>
-                        <p className="text-[#2C5E8D]/60 text-sm mb-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{space.location}</p>
-                        <p className="text-[#2C5E8D]/60 text-sm mb-4">{space.size}</p>
-                        <button onClick={() => setSelectedSpace(space)}
-                          className="w-full py-2 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors text-sm">
-                          Ver detalles
-                        </button>
-                      </div>
-                    </article>
-                  ))}
+
+            {/* ── Filter Panel ── */}
+            {showFilters && (
+              <div className="bg-white border border-[#AECBE9]/40 rounded-2xl p-5 mb-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-[#1a3d5c] text-sm">Filtrar espacios</h3>
+                  {activeFilterCount > 0 && (
+                    <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-700 underline">
+                      Limpiar filtros
+                    </button>
+                  )}
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-xs font-semibold text-[#2C5E8D]/60 uppercase tracking-wide mb-2">Tipo de objeto</p>
+                    <div className="flex flex-wrap gap-2">
+                      {ALL_CATEGORIES.map((c) => {
+                        const Icon = CATEGORY_ICONS[c];
+                        const active = filterCategories.includes(c);
+                        return (
+                          <button key={c} onClick={() => toggleCategory(c)}
+                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${active ? "bg-[#2C5E8D] text-white border-[#2C5E8D]" : "text-[#2C5E8D] border-[#AECBE9] hover:bg-[#AECBE9]/20"}`}>
+                            <Icon className="w-3.5 h-3.5" /> {c}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold text-[#2C5E8D]/60 uppercase tracking-wide mb-2">Tipo de acceso</p>
+                    <div className="flex flex-wrap gap-2">
+                      {ALL_ACCESS.map((a) => {
+                        const Icon = ACCESS_ICONS[a];
+                        const active = filterAccess.includes(a);
+                        return (
+                          <button key={a} onClick={() => toggleAccess(a)}
+                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${active ? "bg-[#2C5E8D] text-white border-[#2C5E8D]" : "text-[#2C5E8D] border-[#AECBE9] hover:bg-[#AECBE9]/20"}`}>
+                            <Icon className="w-3.5 h-3.5" /> {a}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold text-[#2C5E8D]/60 uppercase tracking-wide mb-2">Rango de precio mensual (COP)</p>
+                    <div className="flex items-center gap-2">
+                      <input type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)}
+                        placeholder="Mín" className="w-full border border-[#AECBE9] rounded-lg px-3 py-2 text-[#2C5E8D] text-xs outline-none focus:ring-2 focus:ring-[#2C5E8D]/20" />
+                      <span className="text-[#2C5E8D]/40 text-sm">—</span>
+                      <input type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)}
+                        placeholder="Máx" className="w-full border border-[#AECBE9] rounded-lg px-3 py-2 text-[#2C5E8D] text-xs outline-none focus:ring-2 focus:ring-[#2C5E8D]/20" />
+                    </div>
+                    <p className="text-[10px] text-[#2C5E8D]/40 mt-1">ej. 300000 – 1000000</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {filtered.length === 0
+              ? (
+                <div className="text-center py-20 text-[#2C5E8D]/50">
+                  <Filter className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>No se encontraron espacios con los filtros aplicados.</p>
+                  {activeFilterCount > 0 && (
+                    <button onClick={clearFilters} className="mt-3 text-sm text-[#2C5E8D] underline">Limpiar filtros</button>
+                  )}
+                </div>
+              )
+              : (
+                <>
+                  <p className="text-sm text-[#2C5E8D]/50 mb-4">{filtered.length} espacio(s) encontrado(s)</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filtered.map((space) => {
+                      const CatIcon = CATEGORY_ICONS[space.category];
+                      const AccIcon = ACCESS_ICONS[space.accessType];
+                      return (
+                        <article key={space.id} className="bg-white rounded-2xl shadow hover:shadow-md transition-shadow overflow-hidden">
+                          <div className="relative">
+                            <img src={space.images[0]} alt={space.title} className="w-full h-48 object-cover" />
+                            <span className="absolute top-3 left-3 text-xs bg-white/90 text-[#2C5E8D] px-2 py-1 rounded font-medium shadow-sm">
+                              {space.images.length} fotos
+                            </span>
+                          </div>
+                          <div className="p-5">
+                            <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs bg-[#AECBE9]/40 text-[#2C5E8D] px-2 py-1 rounded font-medium">{space.type}</span>
+                                <span className="text-xs bg-[#2C5E8D]/10 text-[#2C5E8D] px-2 py-1 rounded font-medium flex items-center gap-1">
+                                  <CatIcon className="w-3 h-3" /> {space.category}
+                                </span>
+                              </div>
+                              <span className="font-bold text-[#2C5E8D] text-sm">{space.priceMonthly}<span className="font-normal text-xs text-[#2C5E8D]/60">/mes</span></span>
+                            </div>
+                            <h3 className="font-semibold text-[#1a3d5c] text-lg mb-1">{space.title}</h3>
+                            <p className="text-[#2C5E8D]/60 text-sm mb-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{space.location}</p>
+                            <div className="flex items-center justify-between mb-4">
+                              <p className="text-[#2C5E8D]/60 text-sm">{space.size}</p>
+                              <span className="text-xs text-gray-500 flex items-center gap-1">
+                                <AccIcon className="w-3 h-3" /> {space.accessType}
+                              </span>
+                            </div>
+                            <button onClick={() => setSelectedSpace(space)}
+                              className="w-full py-2 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors text-sm">
+                              Ver detalles
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </>
               )}
           </div>
         </section>

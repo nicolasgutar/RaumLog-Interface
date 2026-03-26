@@ -1,7 +1,7 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { db, spacesTable, reservationsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 const router = Router();
 const JWT_SECRET = process.env["JWT_SECRET"] || "fallback-secret";
@@ -68,6 +68,60 @@ router.get("/admin/reservations", requireAdmin, async (_req, res) => {
     .from(reservationsTable)
     .orderBy(reservationsTable.createdAt);
   return res.json({ reservations });
+});
+
+router.get("/admin/finanzas", requireAdmin, async (_req, res) => {
+  const paidStatuses = ["paid", "in_storage", "completed"] as const;
+  const allPaid = await db
+    .select()
+    .from(reservationsTable)
+    .where(inArray(reservationsTable.status, [...paidStatuses]));
+
+  const totalRevenue = allPaid.reduce((s, r) => s + Number(r.totalPrice), 0);
+  const totalCommission = allPaid.reduce((s, r) => s + Number(r.platformCommission), 0);
+  const ivaOnCommission = Math.round(totalCommission * 0.19);
+  const netCommissionAfterIva = totalCommission - ivaOnCommission;
+
+  const payoutMap: Record<string, { email: string; amount: number; count: number }> = {};
+  const pendingStatuses = ["paid", "in_storage"];
+  for (const r of allPaid) {
+    if (!pendingStatuses.includes(r.status)) continue;
+    const email = r.spaceOwnerEmail || "sin-email";
+    if (!payoutMap[email]) payoutMap[email] = { email, amount: 0, count: 0 };
+    payoutMap[email].amount += Number(r.hostNetPrice);
+    payoutMap[email].count += 1;
+  }
+  const pendingPayouts = Object.values(payoutMap).sort((a, b) => b.amount - a.amount);
+
+  const recentTransactions = allPaid
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 30)
+    .map((r) => ({
+      id: r.id,
+      spaceTitle: r.spaceTitle,
+      guestName: r.guestName,
+      guestEmail: r.guestEmail,
+      hostEmail: r.spaceOwnerEmail,
+      totalPrice: Number(r.totalPrice),
+      platformCommission: Number(r.platformCommission),
+      hostNetPrice: Number(r.hostNetPrice),
+      status: r.status,
+      checkIn: r.checkIn,
+      checkOut: r.checkOut,
+      months: r.months,
+      wompiReference: r.wompiReference,
+      createdAt: r.createdAt,
+    }));
+
+  return res.json({
+    totalRevenue,
+    totalCommission,
+    ivaOnCommission,
+    netCommissionAfterIva,
+    transactionCount: allPaid.length,
+    pendingPayouts,
+    recentTransactions,
+  });
 });
 
 export default router;

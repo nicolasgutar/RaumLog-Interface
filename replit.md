@@ -153,11 +153,25 @@ PENDIENTE_APROBACION → APROBADA_POR_ANFITRION → PAGADA → EN_ALMACENAMIENTO
 
 ### Frontend Routes
 - `/` — Home / Landing
-- `/encuentra-tu-espacio` — Find & Book spaces
+- `/encuentra-tu-espacio` — Find & Book spaces (with filters, contract, ficha)
 - `/ofrece-tu-espacio` — Host registration
 - `/dashboard/host` — Host Panel
-- `/admin/login` → `/admin` → `/admin/control`
+- `/admin/login` → `/admin` → `/admin/control` → `/admin/finanzas`
 - `/contacto` — Contact
+
+### FindSpace — New Features
+- **Filters**: category (Muebles, Cajas, Vehículos, Electrodomésticos, General) + access type (24/7, Con cita, Solo entrega) + price range (COP/month)
+- **Proration**: If check-in is not on day 1 of month, calculates proportional first payment and shows per-cycle alignment info
+- **Contrato Automático**: After payment, shows "Contrato de Almacenamiento Colaborativo" auto-populated with all parties, space, dates, pricing, and 5 legal clauses
+- **Ficha de Depósito**: After successful check-in, auto-generates legal deposit record with declared value, inventory notes, photo count, and parties
+
+### Admin Finance Dashboard (`/admin/finanzas`)
+Protected by admin JWT. Accessible via "Finanzas" button in AdminControl.
+- **KPI cards**: total commission, IVA 19% breakdown, net commission after IVA, total processed volume
+- **IVA section**: discriminates base gravable, IVA to declare, and net commission
+- **Pending payouts**: grouped by host email, shows pending amounts for `paid`/`in_storage` reservations
+- **Transaction table**: last 30 paid+ transactions with per-row IVA calculation
+- **API endpoint**: `GET /admin/finanzas` (JWT-protected)
 
 ## Design Tokens
 

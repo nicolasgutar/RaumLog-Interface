@@ -1,0 +1,50 @@
+Finalizar el núcleo funcional de la plataforma, implementando reglas financieras dinámicas, flujos de confianza y preparación para escalabilidad técnica.
+
+1. Motor de Comisiones Híbrido (Regla de Oro):
+Implementa una función de cálculo de precios que se actualice en tiempo real según la duración de la estancia:
+
+Estancias Cortas (1 a 5 meses): Aplicar comisión del 20% sobre el valor mensual.
+
+Fórmula: Precio Público = Precio Deseado / 0.80.
+
+Estancias Largas (6 meses o más): La comisión total de RaumLog es equivalente a 1 mes de arrendamiento (Precio Deseado).
+
+Lógica: El sistema debe cobrar este mes de comisión en el primer pago del cliente y mostrar al anfitrión que los meses restantes recibirá su pago neto sin el 20% de descuento.
+
+Visualización: El Checkout debe mostrar un mensaje: "¡Beneficio de Larga Estancia aplicado!" cuando la reserva supere los 180 días.
+
+2. Flujo de Confianza y Post-Venta (Acta de Entrega):
+
+Módulo de Check-in Digital: Crea un formulario accesible solo para reservas con estado PAGADO.
+
+Funcionalidad: Permitir al anfitrión cargar hasta 5 fotos y un campo de texto para "Inventario y Estado de Bienes".
+
+Seguridad: Al guardar, generar una "Ficha de Depósito" (PDF o vista web) que sirva como soporte legal del estado en que se recibieron los objetos.
+
+3. Automatización de Contratos y Pagos:
+
+Contrato Automático: Generar una plantilla de "Contrato de Almacenamiento Colaborativo" que se auto-complete con los datos del Cliente, Anfitrión, Espacio y Fechas al confirmar el pago.
+
+Integración Wompi (Estructura): Implementar un PaymentService que prepare el objeto JSON para el Widget de Wompi, incluyendo amount_in_cents, reference y el cálculo de la firma de integridad.
+
+Prorrateo: Si la reserva no inicia el día 1, calcular el valor proporcional de los días restantes del primer mes para alinear los cobros futuros al ciclo mensual.
+
+4. Dashboard de Administración Financiera:
+
+Crea una vista /admin/finanzas que resuma:
+
+Total de comisiones recaudadas.
+
+Discriminación de IVA del 19% sobre la comisión de RaumLog.
+
+Listado de pagos pendientes por dispersar a los anfitriones.
+
+5. UX de Búsqueda y Filtros:
+
+En la página de listado, permitir filtrar por: Categoría de objeto (Muebles, Cajas, Vehículos), Tipo de Acceso (24/7, Con cita, Solo entrega) y Rango de Precio.
+
+Requerimientos Técnicos:
+
+Manejar todos los estados mediante Context API para asegurar que la información de la reserva persista durante el flujo.
+
+Asegurar que el diseño sea 100% responsivo, especialmente el Dashboard del Anfitrión, ya que se usará principalmente desde móviles en las bodegas.

@@ -45,6 +45,12 @@ export async function deleteSpace(token: string, id: number) {
   if (!res.ok) throw new Error("Error al eliminar");
 }
 
+export async function fetchAdminFinanzas(token: string) {
+  const res = await fetch(`${API_URL}/admin/finanzas`, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error("No autorizado");
+  return res.json();
+}
+
 export async function fetchAdminReservations(token: string) {
   const res = await fetch(`${API_URL}/admin/reservations`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error("No autorizado");
