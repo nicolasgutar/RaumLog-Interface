@@ -66,8 +66,7 @@ export default function OfferSpace() {
   const [desiredNet, setDesiredNet] = useState("");
 
   const desiredNetNum = Number(desiredNet.replace(/\D/g, "")) || 0;
-  const publicPrice = desiredNetNum > 0 ? CommissionEngine.getPublicPrice(desiredNetNum) : 0;
-  const commission = desiredNetNum > 0 ? CommissionEngine.getCommission(desiredNetNum) : 0;
+  const scenarios = desiredNetNum > 0 ? CommissionEngine.getScenarios(desiredNetNum) : null;
 
   function formatCOP(n: number) {
     return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -349,36 +348,74 @@ export default function OfferSpace() {
                     <div className="bg-[#2C5E8D] px-4 py-2.5 flex items-center gap-2">
                       <Calculator className="w-4 h-4 text-white" />
                       <span className="text-sm font-semibold text-white">Calculadora de precios</span>
-                      <span className="text-xs text-[#AECBE9] ml-1">· Comisión RaumLog: 20%</span>
+                      <span className="text-xs text-[#AECBE9] ml-1">· Comisión dinámica por duración</span>
                     </div>
-                    <div className="p-4 bg-[#AECBE9]/10 space-y-3">
+                    <div className="p-4 bg-[#AECBE9]/10 space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-[#2C5E8D] mb-1">
-                          ¿Cuánto quieres recibir tú al mes? (Precio Deseado)
+                          ¿Cuánto quieres recibir tú al mes? (Precio Neto Deseado)
                         </label>
                         <input type="text" value={desiredNet} onChange={(e) => setDesiredNet(e.target.value)}
                           className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 bg-white"
                           placeholder="ej. 400000" />
                       </div>
-                      {desiredNetNum > 0 && (
-                        <div className="grid grid-cols-3 gap-3 pt-1">
-                          <div className="text-center p-3 bg-white rounded-xl border border-green-200">
-                            <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium">🙋 Recibirás (neto)</p>
-                            <p className="font-bold text-green-600 text-sm">{formatCOP(desiredNetNum)}</p>
+
+                      {scenarios && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Scenario A */}
+                          <div className="bg-white rounded-xl border border-[#AECBE9] p-4 space-y-2">
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="text-xs font-bold text-[#2C5E8D] uppercase tracking-wide">Escenario A</span>
+                              <span className="text-xs bg-[#AECBE9]/40 text-[#2C5E8D] px-2 py-0.5 rounded-full">1 – 5 meses</span>
+                            </div>
+                            <div className="text-xs space-y-1.5">
+                              <div className="flex justify-between">
+                                <span className="text-[#2C5E8D]/60">Precio que paga el cliente</span>
+                                <span className="font-semibold text-[#2C5E8D]">{formatCOP(scenarios.shortStay.publicMonthly)}/mes</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-orange-600">Comisión RaumLog (20%)</span>
+                                <span className="font-semibold text-orange-600">{formatCOP(scenarios.shortStay.commission)}/mes</span>
+                              </div>
+                              <div className="flex justify-between border-t border-[#AECBE9]/40 pt-1.5">
+                                <span className="text-green-700 font-medium">🙋 Tú recibes</span>
+                                <span className="font-bold text-green-700">{formatCOP(scenarios.shortStay.hostNet)}/mes</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-center p-3 bg-white rounded-xl border border-[#2C5E8D]/20">
-                            <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium">💳 Precio Público</p>
-                            <p className="font-bold text-[#2C5E8D] text-sm">{formatCOP(publicPrice)}</p>
-                          </div>
-                          <div className="text-center p-3 bg-white rounded-xl border border-orange-200">
-                            <p className="text-xs text-[#2C5E8D]/60 mb-1 font-medium">📊 Comisión (20%)</p>
-                            <p className="font-bold text-orange-500 text-sm">{formatCOP(commission)}</p>
+
+                          {/* Scenario B */}
+                          <div className="bg-green-50 rounded-xl border border-green-200 p-4 space-y-2">
+                            <div className="flex items-center gap-1.5 mb-2">
+                              <span className="text-xs font-bold text-green-700 uppercase tracking-wide">Escenario B</span>
+                              <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full">6+ meses 🎉</span>
+                            </div>
+                            <p className="text-xs text-green-700 font-medium">Ejemplo a {scenarios.longStay.exampleMonths} meses:</p>
+                            <div className="text-xs space-y-1.5">
+                              <div className="flex justify-between">
+                                <span className="text-[#2C5E8D]/60">Total que paga el cliente</span>
+                                <span className="font-semibold text-[#2C5E8D]">{formatCOP(scenarios.longStay.publicTotal)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-orange-600">Comisión RaumLog (1 mes fijo)</span>
+                                <span className="font-semibold text-orange-600">{formatCOP(scenarios.longStay.commission)}</span>
+                              </div>
+                              <div className="flex justify-between border-t border-green-200 pt-1.5">
+                                <span className="text-green-700 font-medium">🙋 Tú recibes</span>
+                                <span className="font-bold text-green-700">{formatCOP(scenarios.longStay.hostNetTotal)}</span>
+                              </div>
+                              <p className="text-green-600 text-center font-medium pt-1">
+                                Tasa efectiva: {(scenarios.longStay.effectiveRate * 100).toFixed(1)}% vs. 20%
+                              </p>
+                            </div>
                           </div>
                         </div>
                       )}
-                      {desiredNetNum > 0 && (
+
+                      {scenarios && (
                         <p className="text-xs text-[#2C5E8D]/50 text-center">
-                          El cliente paga {formatCOP(publicPrice)} y tú recibes {formatCOP(desiredNetNum)} directamente.
+                          El cliente paga {formatCOP(scenarios.shortStay.publicMonthly)}/mes.
+                          En reservas de 6+ meses, RaumLog cobra solo 1 mes en vez del 20% mensual.
                         </p>
                       )}
                     </div>

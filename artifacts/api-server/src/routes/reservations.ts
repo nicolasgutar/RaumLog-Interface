@@ -75,8 +75,22 @@ router.post("/reservations/:id/pay", async (req, res) => {
   }
 
   const totalPrice = Number(reservation.totalPrice);
-  const platformCommission = Math.round(totalPrice * 0.2);
-  const hostNetPrice = totalPrice - platformCommission;
+  const months = reservation.months ?? 0;
+
+  // Use frontend-computed commission if available; otherwise fall back to dynamic rule:
+  // Scenario A (< 6 months): 20% · Scenario B (>= 6 months): 1 month flat
+  let platformCommission = Number(reservation.platformCommission);
+  let hostNetPrice = Number(reservation.hostNetPrice);
+
+  if (!platformCommission || platformCommission === 0) {
+    if (months >= 6) {
+      // 1 month of rent = totalPrice / months
+      platformCommission = months > 0 ? Math.round(totalPrice / months) : Math.round(totalPrice * 0.2);
+    } else {
+      platformCommission = Math.round(totalPrice * 0.2);
+    }
+    hostNetPrice = totalPrice - platformCommission;
+  }
 
   const [updated] = await db
     .update(reservationsTable)

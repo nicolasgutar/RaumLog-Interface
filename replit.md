@@ -79,12 +79,25 @@ artifacts-monorepo/
 
 ## Business Logic
 
-### Commission Engine (20%)
-- Host enters "Precio Deseado" (what they want to receive)
-- Public Price = Desired / 0.80
-- Commission = Public Price × 0.20
-- Host receives 80% of public price paid by guest
-- `CommissionEngine` exported from `artifacts/raumlog/src/lib/payment-service.ts`
+### Commission Engine — Dynamic by Duration
+Two scenarios, auto-selected based on reservation length:
+
+**Scenario A (1–5 months):** 20% flat commission
+- Public Price = Desired Net / 0.80
+- Commission = 20% of total
+- Host receives 80% of total
+
+**Scenario B (6+ months):** 1 month flat commission — "Beneficio por larga estancia"
+- Commission = 1 × monthly public rent (fixed, regardless of total duration)
+- Host receives = (months − 1) × monthly public rent
+- Effective rate = 1/months (e.g. 8 months → 12.5% < 20% → host saves money)
+- Frontend shows: "¡Beneficio aplicado por larga estancia!" badge + amortised monthly commission + savings vs 20% model
+
+Real-time switching: as user moves date selectors in the booking form, the breakdown switches models automatically.
+
+`CommissionEngine.getBookingBreakdown(months, days, publicMonthly, publicDaily)` returns `BookingBreakdown`.
+`CommissionEngine.getScenarios(desiredNetMonthly)` returns both scenarios for the OfferSpace calculator.
+Source: `artifacts/raumlog/src/lib/payment-service.ts`
 
 ### Reservation State Machine
 ```

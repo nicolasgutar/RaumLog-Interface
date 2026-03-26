@@ -7,7 +7,7 @@ import {
   Package, Clock, ThumbsUp, Banknote,
 } from "lucide-react";
 import { createReservation, approveReservationByHost, payReservation, checkinReservation } from "@/lib/api";
-import { PaymentService, CommissionEngine } from "@/lib/payment-service";
+import { PaymentService, CommissionEngine, type BookingBreakdown } from "@/lib/payment-service";
 import { NotificationService } from "@/lib/notifications";
 import { useStore } from "@/store/useStore";
 
@@ -132,12 +132,12 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
 
   const days = daysBetween(checkIn, checkOut);
   const months = Math.floor(days / 30);
-  const useLongStay = days >= 30;
-  const publicPrice = useLongStay
-    ? months * space.rawPriceMonthly
-    : days * space.rawPriceDaily;
-  const hostNet = CommissionEngine.getHostNet(publicPrice);
-  const platformCut = CommissionEngine.getPlatformCut(publicPrice);
+  const breakdown: BookingBreakdown = CommissionEngine.getBookingBreakdown(
+    months, days, space.rawPriceMonthly, space.rawPriceDaily
+  );
+  const publicPrice = breakdown.publicTotal;
+  const hostNet = breakdown.hostNetTotal;
+  const platformCut = breakdown.commission;
 
   const prev = () => setCurrentImg((i) => (i === 0 ? space.images.length - 1 : i - 1));
   const next = () => setCurrentImg((i) => (i === space.images.length - 1 ? 0 : i + 1));
@@ -344,12 +344,18 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
               <span className="text-green-700">El anfitrión aprobó tu solicitud. Puedes continuar con el pago.</span>
             </div>
 
-            <div className="bg-[#AECBE9]/20 rounded-xl p-4 mb-5 text-sm space-y-1">
+            <div className={`rounded-xl p-4 mb-5 text-sm space-y-1 ${breakdown.isLongStay ? "bg-green-50 border border-green-200" : "bg-[#AECBE9]/20"}`}>
+              {breakdown.isLongStay && (
+                <div className="flex items-center gap-2 mb-2">
+                  <span>🎉</span>
+                  <span className="font-semibold text-green-700 text-xs uppercase tracking-wide">¡Beneficio por larga estancia aplicado!</span>
+                </div>
+              )}
               <p className="font-semibold text-[#2C5E8D] text-base">{space.title}</p>
-              <p className="text-[#2C5E8D]/70">{checkIn} → {checkOut} · {days} días</p>
-              {useLongStay
-                ? <p className="text-[#2C5E8D]/70">{months} meses × {space.priceMonthly}</p>
-                : <p className="text-[#2C5E8D]/70">{days} días × {space.priceDaily}</p>}
+              <p className="text-[#2C5E8D]/70">{checkIn} → {checkOut}</p>
+              <p className="text-[#2C5E8D]/70">
+                {months > 0 ? `${months} meses × ${space.priceMonthly}` : `${days} días × ${space.priceDaily}`}
+              </p>
             </div>
 
             <div className="border border-[#2C5E8D]/20 rounded-xl p-5 mb-5">
@@ -363,13 +369,26 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
               </p>
               <div className="space-y-2 text-sm border-t border-[#AECBE9]/40 pt-3">
                 <div className="flex justify-between text-[#2C5E8D]/70">
-                  <span>Precio del espacio</span>
+                  <span>Total del espacio</span>
                   <span>{formatCOP(publicPrice)}</span>
                 </div>
-                <div className="flex justify-between text-[#2C5E8D]/50 text-xs">
-                  <span>Comisión plataforma (20%)</span>
-                  <span>{formatCOP(platformCut)}</span>
-                </div>
+                {breakdown.isLongStay ? (
+                  <>
+                    <div className="flex justify-between text-green-700 text-xs bg-green-50 rounded px-2 py-1">
+                      <span>Comisión RaumLog (1 mes fijo · {breakdown.commissionLabel})</span>
+                      <span>{formatCOP(platformCut)}</span>
+                    </div>
+                    <div className="flex justify-between text-[#2C5E8D]/40 text-xs">
+                      <span>Ahorro vs. modelo 20%</span>
+                      <span className="text-green-600">−{formatCOP(publicPrice * 0.2 - platformCut)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between text-[#2C5E8D]/50 text-xs">
+                    <span>Comisión plataforma ({breakdown.commissionLabel})</span>
+                    <span>{formatCOP(platformCut)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-[#2C5E8D] text-base pt-1 border-t border-[#AECBE9]/30">
                   <span>Total a pagar</span>
                   <span>{formatCOP(publicPrice)}</span>
@@ -423,14 +442,44 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
 
               {/* Price summary */}
               {days > 0 && (
-                <div className="bg-[#AECBE9]/20 rounded-xl p-4 text-sm space-y-1.5">
+                <div className={`rounded-xl p-4 text-sm space-y-2 ${breakdown.isLongStay ? "bg-green-50 border border-green-200" : "bg-[#AECBE9]/20"}`}>
+                  {breakdown.isLongStay && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-base">🎉</span>
+                      <span className="font-semibold text-green-700 text-xs uppercase tracking-wide">¡Beneficio aplicado por larga estancia!</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-[#2C5E8D]/70">
-                    <span>{useLongStay ? `${months} meses × ${space.priceMonthly}` : `${days} días × ${space.priceDaily}`}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-[#2C5E8D] text-base pt-2 border-t border-[#2C5E8D]/10 mt-1">
-                    <span>Total</span>
+                    <span>{months > 0 ? `${months} meses × ${space.priceMonthly}` : `${days} días × ${space.priceDaily}`}</span>
                     <span>{formatCOP(publicPrice)}</span>
                   </div>
+                  {breakdown.isLongStay ? (
+                    <>
+                      <div className="flex justify-between text-green-700 text-xs bg-green-100 rounded-lg px-3 py-1.5">
+                        <span>Comisión RaumLog (1 mes fijo)</span>
+                        <span>−{formatCOP(platformCut)}</span>
+                      </div>
+                      <div className="flex justify-between text-[#2C5E8D]/60 text-xs">
+                        <span>≈ {formatCOP(breakdown.monthlyCommissionAmortised ?? 0)}/mes amortizado</span>
+                        <span className="text-green-700 font-medium">vs. 20% = {formatCOP(publicPrice * 0.2)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between text-[#2C5E8D]/50 text-xs">
+                      <span>Comisión plataforma (20%)</span>
+                      <span>{formatCOP(platformCut)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-[#2C5E8D] text-base pt-1.5 border-t border-[#2C5E8D]/10">
+                    <span>Total a pagar</span>
+                    <span>{formatCOP(publicPrice)}</span>
+                  </div>
+                  {!breakdown.isLongStay && months === 0 && (
+                    <p className="text-[#2C5E8D]/40 text-xs">💡 Selecciona 6+ meses para comisión reducida (1 mes fijo)</p>
+                  )}
+                  {!breakdown.isLongStay && months > 0 && months < 6 && (
+                    <p className="text-[#2C5E8D]/40 text-xs">💡 ¡Con {6 - months} meses más aplica el beneficio de larga estancia!</p>
+                  )}
                 </div>
               )}
 
