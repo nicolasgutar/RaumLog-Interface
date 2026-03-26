@@ -200,4 +200,25 @@ router.get("/reservations/space/:spaceId", async (req, res) => {
   return res.json({ reservations });
 });
 
+router.get("/reservations/guest", async (req, res) => {
+  const email = req.query["email"] as string;
+  if (!email) return res.status(400).json({ error: "Email requerido" });
+  const reservations = await db
+    .select()
+    .from(reservationsTable)
+    .where(eq(reservationsTable.guestEmail, email))
+    .orderBy(reservationsTable.createdAt);
+  return res.json({ reservations });
+});
+
+router.get("/reservations/:id", async (req, res) => {
+  const id = Number(req.params["id"]);
+  const [reservation] = await db
+    .select()
+    .from(reservationsTable)
+    .where(eq(reservationsTable.id, id));
+  if (!reservation) return res.status(404).json({ error: "Reserva no encontrada" });
+  return res.json({ reservation });
+});
+
 export default router;
