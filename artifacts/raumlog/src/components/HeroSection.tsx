@@ -52,7 +52,7 @@ export default function HeroSection() {
           {/* Subheadline */}
           <p className="text-white/75 text-lg sm:text-xl mb-10 font-sans leading-relaxed max-w-lg">
             Conectamos personas que necesitan espacio con vecinos que lo tienen disponible.
-            Contratos digitales, pagos seguros y seguro ante incidentes.
+            Contratos digitales y pagos seguros.
           </p>
 
           {/* CTA buttons */}
