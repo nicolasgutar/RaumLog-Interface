@@ -28,8 +28,6 @@ interface MenuRow {
 export default function CuentaScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
-  const webTop = Platform.OS === "web" ? 67 : 0;
-
   const handleLogout = () => {
     Alert.alert("Cerrar sesión", "¿Estás seguro que quieres salir?", [
       { text: "Cancelar", style: "cancel" },
@@ -50,7 +48,7 @@ export default function CuentaScreen() {
         style={[
           styles.root,
           styles.guestRoot,
-          { paddingTop: insets.top + webTop, paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) },
+          { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) },
         ]}
       >
         <Image
@@ -103,7 +101,7 @@ export default function CuentaScreen() {
   ];
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top + webTop }]}>
+    <View style={styles.root}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) }}

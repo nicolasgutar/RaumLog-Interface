@@ -84,8 +84,6 @@ function ReservationCard({ item }: { item: Reservation }) {
 export default function ReservasScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const webTop = Platform.OS === "web" ? 67 : 0;
-
   const { data: reservations = [], isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["guest-reservations", user?.email],
     queryFn: () => fetchGuestReservations(user!.email),
@@ -93,7 +91,7 @@ export default function ReservasScreen() {
   });
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top + webTop }]}>
+    <View style={styles.root}>
       <View style={styles.header}>
         <Text style={styles.headerSub}>Tu historial</Text>
         <Text style={styles.headerTitle}>Mis reservas</Text>

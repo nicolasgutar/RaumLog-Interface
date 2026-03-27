@@ -195,3 +195,38 @@ Protected by admin JWT. Accessible via "Finanzas" button in AdminControl.
 - Check-in / Acta de Entrega completed
 
 In production, these would be replaced with email/SMS/push integrations.
+
+## Mobile App (Expo) — Architecture Notes
+
+### Tab Navigation (`app/(tabs)/_layout.tsx`)
+- Uses Expo Router `Tabs` with `headerShown: true` globally.
+- Custom `LogoTitle` component shows the RaumLog logo (120×40px) centered in the header bar.
+- Header background: white with a 1px `Colors.border` bottom line.
+- Tab bar uses `BlurView` on iOS for the liquid-glass effect; solid white on Android/web.
+- `WhatsAppFAB` is overlaid as a sibling View outside the `Tabs` component.
+
+### Safe Area handling
+- The framework Tabs header handles the top safe area automatically.
+- Individual tab screens (`index.tsx`, `reservas.tsx`, `dashboard.tsx`, `cuenta.tsx`) do NOT add `paddingTop` for safe area at the top — the header provides that.
+- Bottom padding uses `insets.bottom + (Platform.OS === "web" ? 34 : 90)` to clear the tab bar.
+
+### Auth (Mobile)
+- `context/AuthContext.tsx` — JWT stored in `AsyncStorage`.
+- `API_BASE = https://${EXPO_PUBLIC_DOMAIN}/api`
+- Legal consent checkbox (Ley 1581) required before registration.
+- `NotificationContext.tsx` — in-app toast notifications (wired in root `_layout.tsx`).
+
+## Web UX Notes
+
+### HeroSection (`src/components/HeroSection.tsx`)
+- Background: Unsplash warehouse image with `from-[#0d2235]/85 via-[#1a3d5c]/70` gradient.
+- Trust stats: 2 cities, 4.9 rating, 100% digital contracts.
+- CTAs: "Busca tu espacio" (filled blue) + "Gana como anfitrión" (outline white).
+
+### FindSpace — "Reservar" button
+- Accent color: `#E8A838` (amber) with shadow and hover lift.
+- Arrow icon with group-hover translate-x animation for perceived interactivity.
+
+### WhatsApp support
+- Web: `WhatsAppButton.tsx` — fixed bottom-right float on all pages.
+- Mobile: `WhatsAppFAB.tsx` — overlaid outside the Tabs component in TabLayout.

@@ -161,10 +161,8 @@ export default function BuscarScreen() {
       )
     : sorted;
 
-  const webTop = Platform.OS === "web" ? 67 : 0;
-
   return (
-    <View style={[styles.root, { paddingTop: insets.top + webTop }]}>
+    <View style={styles.root}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerSub}>

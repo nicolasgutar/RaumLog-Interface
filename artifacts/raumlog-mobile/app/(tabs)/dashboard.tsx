@@ -75,8 +75,6 @@ export default function DashboardScreen() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"spaces" | "reservations">("reservations");
-  const webTop = Platform.OS === "web" ? 67 : 0;
-
   const spacesQ = useQuery({
     queryKey: ["host-spaces", user?.email],
     queryFn: () => fetchHostSpaces(user!.email),
@@ -119,7 +117,7 @@ export default function DashboardScreen() {
 
   if (!user) {
     return (
-      <View style={[styles.root, styles.center, { paddingTop: insets.top + webTop }]}>
+      <View style={[styles.root, styles.center]}>
         <View style={styles.emptyIcon}>
           <Ionicons name="home-outline" size={36} color={Colors.primaryLight} />
         </View>
@@ -134,7 +132,7 @@ export default function DashboardScreen() {
 
   if (user.role !== "host") {
     return (
-      <View style={[styles.root, styles.center, { paddingTop: insets.top + webTop }]}>
+      <View style={[styles.root, styles.center]}>
         <View style={styles.emptyIcon}>
           <Ionicons name="home-outline" size={36} color={Colors.primaryLight} />
         </View>
@@ -153,7 +151,7 @@ export default function DashboardScreen() {
     .reduce((sum, r) => sum + parseInt(r.totalPrice ?? "0", 10), 0);
 
   return (
-    <View style={[styles.root, { paddingTop: insets.top + webTop }]}>
+    <View style={styles.root}>
       <View style={styles.header}>
         <View>
           <Text style={styles.headerSub}>Panel</Text>

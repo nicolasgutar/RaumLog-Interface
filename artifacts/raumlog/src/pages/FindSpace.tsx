@@ -912,9 +912,14 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                 </div>
               </div>
 
-              <button onClick={() => setStep("booking")}
-                className="block w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors text-center text-sm tracking-wide">
-                Reservar este espacio
+              <button
+                onClick={() => setStep("booking")}
+                className="group block w-full py-4 bg-[#E8A838] hover:bg-[#d49520] text-white font-bold rounded-xl transition-all text-sm tracking-wider uppercase shadow-lg shadow-[#E8A838]/30 hover:shadow-[#E8A838]/50 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                <span>Reservar este espacio</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </button>
             </div>
           </>

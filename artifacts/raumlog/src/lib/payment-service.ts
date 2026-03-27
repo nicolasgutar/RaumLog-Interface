@@ -1,3 +1,24 @@
+/**
+ * @file payment-service.ts
+ * @module RaumLog/PaymentService
+ *
+ * Motor de comisiones y servicio de pagos Wompi para RaumLog.
+ *
+ * ## Modelos de comisión
+ * - **Escenario A** (1–5 meses): 20% del total público.
+ * - **Escenario B** (6+ meses): 1 mes de renta fijo como comisión.
+ * - **IVA**: 19% sobre el precio público, siempre a cargo del cliente.
+ *
+ * ## Flujo de pago (sandbox)
+ * 1. `CommissionEngine.getBookingBreakdown()` calcula totales.
+ * 2. `PaymentService.prepare()` genera la referencia y firma para Wompi.
+ * 3. `PaymentService.simulateSandboxPayment()` aprueba el pago en sandbox.
+ *
+ * En producción, reemplazar `WOMPI_SANDBOX_INTEGRITY_KEY` por la clave
+ * real del panel de Wompi y verificar el webhook de confirmación.
+ *
+ * @see https://docs.wompi.co
+ */
 import { generateWompiSignature } from "./api";
 
 export interface WompiPayload {
