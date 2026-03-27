@@ -170,7 +170,7 @@ export default function BuscarScreen() {
           <Text style={styles.headerSub}>
             {geoLabel ? `Tu ubicación · ${geoLabel}` : "Disponible ahora"}
           </Text>
-          <Text style={styles.headerTitle}>Espacios de almacenaje</Text>
+          <Text style={styles.headerTitle}>Espacios de almacenamiento</Text>
         </View>
         {geoLabel && (
           <View style={styles.geoPill}>

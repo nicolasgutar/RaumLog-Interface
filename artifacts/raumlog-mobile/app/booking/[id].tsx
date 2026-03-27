@@ -66,7 +66,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string
     label: "En almacenamiento",
     color: Colors.statusStorage,
     icon: "cube-outline",
-    description: "Tu almacenaje está activo.",
+    description: "Tu almacenamiento está activo.",
   },
   completed: {
     label: "Completada",
@@ -193,7 +193,7 @@ export default function BookingDetailScreen() {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Ionicons name="business-outline" size={16} color={Colors.primary} />
-            <Text style={styles.infoValue}>{reservation.spaceTitle || "Espacio de almacenaje"}</Text>
+            <Text style={styles.infoValue}>{reservation.spaceTitle || "Espacio de almacenamiento"}</Text>
           </View>
           <View style={styles.infoRow}>
             <Ionicons name="calendar-outline" size={16} color={Colors.textMuted} />

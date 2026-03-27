@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React from "react";
 import {
   Alert,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -52,12 +53,14 @@ export default function CuentaScreen() {
           { paddingTop: insets.top + webTop, paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) },
         ]}
       >
-        <View style={styles.guestLogo}>
-          <Text style={styles.guestLogoText}>RL</Text>
-        </View>
+        <Image
+          source={require("../../assets/images/icon.png")}
+          style={styles.guestLogo}
+          resizeMode="contain"
+        />
         <Text style={styles.guestTitle}>RaumLog</Text>
         <Text style={styles.guestSubtitle}>
-          Tu espacio, tu confianza.{"\n"}Almacenaje colaborativo en Medellín y Bogotá.
+          Tu espacio, tu confianza.{"\n"}Almacenamiento colaborativo en Medellín y Bogotá.
         </Text>
         <Pressable
           style={({ pressed }) => [styles.loginBtn, pressed && { opacity: 0.85 }]}
@@ -164,20 +167,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   guestLogo: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
-    backgroundColor: Colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-    shadowColor: Colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    width: 140,
+    height: 140,
+    borderRadius: 28,
+    marginBottom: 8,
   },
-  guestLogoText: { fontFamily: "Inter_700Bold", fontSize: 28, color: "#fff", letterSpacing: 2 },
   guestTitle: { fontFamily: "Inter_700Bold", fontSize: 28, color: Colors.text },
   guestSubtitle: {
     fontFamily: "Inter_400Regular", fontSize: 15, color: Colors.textSecondary,

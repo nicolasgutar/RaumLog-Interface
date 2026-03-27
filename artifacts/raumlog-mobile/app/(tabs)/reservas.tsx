@@ -67,7 +67,7 @@ function ReservationCard({ item }: { item: Reservation }) {
         <View style={{ flex: 1 }} />
         <Text style={styles.cardDate}>{date}</Text>
       </View>
-      <Text style={styles.cardTitle} numberOfLines={1}>{item.spaceTitle || "Espacio de almacenaje"}</Text>
+      <Text style={styles.cardTitle} numberOfLines={1}>{item.spaceTitle || "Espacio de almacenamiento"}</Text>
       <View style={styles.cardRow}>
         <Ionicons name="calendar-outline" size={13} color={Colors.textMuted} />
         <Text style={styles.cardMeta}>{item.months} {item.months === 1 ? "mes" : "meses"}</Text>
