@@ -157,6 +157,13 @@ export default function DashboardScreen() {
           <Text style={styles.headerSub}>Panel</Text>
           <Text style={styles.headerTitle}>Mis espacios</Text>
         </View>
+        <Pressable
+          style={styles.addBtn}
+          onPress={() => router.push("/agregar-espacio")}
+          accessibilityLabel="Agregar espacio"
+        >
+          <Ionicons name="add" size={22} color="#fff" />
+        </Pressable>
       </View>
 
       <ScrollView
@@ -303,7 +310,16 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
   center: { alignItems: "center", justifyContent: "center", gap: 10, paddingHorizontal: 32 },
-  header: { paddingHorizontal: 20, paddingBottom: 16 },
+  header: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20, paddingBottom: 16,
+  },
+  addBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: Colors.primary, alignItems: "center", justifyContent: "center",
+    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3, shadowRadius: 6, elevation: 4,
+  },
   headerSub: {
     fontFamily: "Inter_500Medium", fontSize: 13, color: Colors.primary,
     letterSpacing: 0.5, textTransform: "uppercase",
