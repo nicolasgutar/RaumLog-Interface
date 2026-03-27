@@ -49,7 +49,7 @@ export default function TabLayout() {
           /* ── Header superior con logo ── */
           headerShown: true,
           headerTitle: () => <LogoTitle />,
-          headerTitleAlign: "center",
+          headerTitleAlign: "left",
           headerStyle: {
             backgroundColor: "#ffffff",
             elevation: 0,
