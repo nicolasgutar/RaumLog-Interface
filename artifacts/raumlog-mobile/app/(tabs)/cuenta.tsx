@@ -48,7 +48,7 @@ export default function CuentaScreen() {
         style={[
           styles.root,
           styles.guestRoot,
-          { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) },
+          { paddingTop: insets.top, paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) },
         ]}
       >
         <Image
@@ -101,7 +101,7 @@ export default function CuentaScreen() {
   ];
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) }}

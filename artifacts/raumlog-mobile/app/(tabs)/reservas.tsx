@@ -91,7 +91,7 @@ export default function ReservasScreen() {
   });
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerSub}>Tu historial</Text>
         <Text style={styles.headerTitle}>Mis reservas</Text>

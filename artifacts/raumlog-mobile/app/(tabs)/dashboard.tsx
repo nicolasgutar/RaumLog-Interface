@@ -117,7 +117,7 @@ export default function DashboardScreen() {
 
   if (!user) {
     return (
-      <View style={[styles.root, styles.center]}>
+      <View style={[styles.root, styles.center, { paddingTop: insets.top }]}>
         <View style={styles.emptyIcon}>
           <Ionicons name="home-outline" size={36} color={Colors.primaryLight} />
         </View>
@@ -132,7 +132,7 @@ export default function DashboardScreen() {
 
   if (user.role !== "host") {
     return (
-      <View style={[styles.root, styles.center]}>
+      <View style={[styles.root, styles.center, { paddingTop: insets.top }]}>
         <View style={styles.emptyIcon}>
           <Ionicons name="home-outline" size={36} color={Colors.primaryLight} />
         </View>
@@ -151,7 +151,7 @@ export default function DashboardScreen() {
     .reduce((sum, r) => sum + parseInt(r.totalPrice ?? "0", 10), 0);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View>
           <Text style={styles.headerSub}>Panel</Text>

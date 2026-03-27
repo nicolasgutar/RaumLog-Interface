@@ -14,7 +14,6 @@ import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Image,
   Platform,
   StyleSheet,
   View,
@@ -23,18 +22,6 @@ import {
 
 import Colors from "@/constants/colors";
 import WhatsAppFAB from "@/components/WhatsAppFAB";
-
-/** Logo centrado que se muestra en el header de cada pestaña. */
-function LogoTitle() {
-  return (
-    <Image
-      source={require("../../assets/images/icon.png")}
-      style={{ width: 120, height: 40 }}
-      resizeMode="contain"
-      accessibilityLabel="RaumLog"
-    />
-  );
-}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -46,18 +33,7 @@ export default function TabLayout() {
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          /* ── Header superior con logo ── */
-          headerShown: true,
-          headerTitle: () => <LogoTitle />,
-          headerTitleAlign: "left",
-          headerStyle: {
-            backgroundColor: "#ffffff",
-            elevation: 0,
-            shadowOpacity: 0,
-            borderBottomWidth: 1,
-            borderBottomColor: Colors.border,
-          } as any,
-          headerShadowVisible: false,
+          headerShown: false,
 
           /* ── Tab bar inferior ── */
           tabBarActiveTintColor: Colors.primary,

@@ -162,7 +162,7 @@ export default function BuscarScreen() {
     : sorted;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerSub}>
