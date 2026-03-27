@@ -8,6 +8,7 @@ import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 
 import Colors from "@/constants/colors";
+import WhatsAppFAB from "@/components/WhatsAppFAB";
 
 function NativeTabLayout() {
   return (
@@ -121,8 +122,10 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
-    return <NativeTabLayout />;
-  }
-  return <ClassicTabLayout />;
+  return (
+    <View style={{ flex: 1 }}>
+      {isLiquidGlassAvailable() ? <NativeTabLayout /> : <ClassicTabLayout />}
+      <WhatsAppFAB />
+    </View>
+  );
 }

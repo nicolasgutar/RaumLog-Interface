@@ -17,6 +17,7 @@ export default function AuthPage() {
   const [showPass, setShowPass] = useState(false);
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +37,10 @@ export default function AuthPage() {
     setError("");
     if (mode === "register" && form.password !== form.confirmPassword) {
       setError("Las contraseñas no coinciden");
+      return;
+    }
+    if (mode === "register" && !acceptedTerms) {
+      setError("Debes aceptar los Términos y la Política de Privacidad para registrarte");
       return;
     }
     setLoading(true);
@@ -221,6 +226,29 @@ export default function AuthPage() {
               </div>
             )}
 
+            {mode === "register" && (
+              <div className="flex items-start gap-3 pt-1">
+                <input
+                  type="checkbox"
+                  id="accept-terms"
+                  checked={acceptedTerms}
+                  onChange={(e) => { setAcceptedTerms(e.target.checked); setError(""); }}
+                  className="mt-0.5 w-4 h-4 rounded border-[#AECBE9] text-[#2C5E8D] accent-[#2C5E8D] cursor-pointer flex-shrink-0"
+                />
+                <label htmlFor="accept-terms" className="text-xs text-[#2C5E8D]/70 leading-relaxed cursor-pointer">
+                  Acepto los{" "}
+                  <Link to="/terminos-y-condiciones" target="_blank" className="text-[#2C5E8D] font-semibold hover:underline">
+                    Términos y Condiciones
+                  </Link>
+                  {" "}y la{" "}
+                  <Link to="/politica-de-privacidad" target="_blank" className="text-[#2C5E8D] font-semibold hover:underline">
+                    Política de Privacidad
+                  </Link>
+                  {" "}de RaumLog, incluyendo la cláusula de comisión híbrida y el tratamiento de mis datos personales conforme a la Ley 1581 de Colombia.
+                </label>
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 text-sm text-red-700">
                 {error}
@@ -249,14 +277,6 @@ export default function AuthPage() {
             </button>
           </p>
 
-          {mode === "register" && (
-            <p className="text-center text-[10px] text-[#2C5E8D]/40 mt-3">
-              Al registrarte aceptas nuestros{" "}
-              <Link to="/terminos-y-condiciones" className="underline hover:text-[#2C5E8D]">Términos y Condiciones</Link>
-              {" "}y{" "}
-              <Link to="/politica-de-privacidad" className="underline hover:text-[#2C5E8D]">Política de Privacidad</Link>
-            </p>
-          )}
         </div>
       </div>
     </div>

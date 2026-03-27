@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -34,6 +35,7 @@ export default function AuthScreen() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -52,6 +54,10 @@ export default function AuthScreen() {
     }
     if (mode === "register" && password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres");
+      return;
+    }
+    if (mode === "register" && !acceptedTerms) {
+      setError("Debes aceptar los Términos y la Política de Privacidad");
       return;
     }
     setLoading(true);
@@ -191,6 +197,34 @@ export default function AuthScreen() {
             />
           </Pressable>
         </View>
+
+        {mode === "register" && (
+          <Pressable
+            style={styles.termsRow}
+            onPress={() => { setAcceptedTerms(!acceptedTerms); setError(""); }}
+          >
+            <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+              {acceptedTerms && <Ionicons name="checkmark" size={14} color="#fff" />}
+            </View>
+            <Text style={styles.termsText}>
+              Acepto los{" "}
+              <Text
+                style={styles.termsLink}
+                onPress={() => Linking.openURL("https://raumlog.co/terminos-y-condiciones")}
+              >
+                Términos y Condiciones
+              </Text>
+              {" "}y la{" "}
+              <Text
+                style={styles.termsLink}
+                onPress={() => Linking.openURL("https://raumlog.co/politica-de-privacidad")}
+              >
+                Política de Privacidad
+              </Text>
+              {" "}(Ley 1581 de Colombia).
+            </Text>
+          </Pressable>
+        )}
 
         {!!error && (
           <View style={styles.errorBox}>
@@ -405,5 +439,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.primary,
     textAlign: "center",
+  },
+  termsRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: Colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+    flexShrink: 0,
+    backgroundColor: "#fff",
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  termsText: {
+    flex: 1,
+    fontFamily: "Inter_400Regular",
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  termsLink: {
+    color: Colors.primary,
+    fontFamily: "Inter_600SemiBold",
+    textDecorationLine: "underline",
   },
 });

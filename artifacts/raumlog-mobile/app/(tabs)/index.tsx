@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -94,34 +94,90 @@ function SpaceCard({ space, onPress }: { space: Space; onPress: () => void }) {
   );
 }
 
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Medellín": { lat: 6.2476, lng: -75.5658 },
+  "Bogotá": { lat: 4.7110, lng: -74.0721 },
+};
+
+function geoDistance(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export default function BuscarScreen() {
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("Todas");
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoLabel, setGeoLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setUserCoords(coords);
+          const nearest = Object.entries(CITY_COORDS).sort(
+            ([, a], [, b]) =>
+              geoDistance(coords.lat, coords.lng, a.lat, a.lng) -
+              geoDistance(coords.lat, coords.lng, b.lat, b.lng)
+          )[0];
+          if (nearest) setGeoLabel(`Cerca de ${nearest[0]}`);
+        },
+        () => {},
+        { timeout: 5000, enableHighAccuracy: false }
+      );
+    }
+  }, []);
 
   const { data: spaces = [], isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ["spaces", selectedCity],
     queryFn: () => fetchSpaces(selectedCity),
   });
 
+  const sorted = userCoords
+    ? [...spaces].sort((a, b) => {
+        const ca = CITY_COORDS[a.city];
+        const cb = CITY_COORDS[b.city];
+        if (!ca || !cb) return 0;
+        return (
+          geoDistance(userCoords.lat, userCoords.lng, ca.lat, ca.lng) -
+          geoDistance(userCoords.lat, userCoords.lng, cb.lat, cb.lng)
+        );
+      })
+    : spaces;
+
   const filtered = search.trim()
-    ? spaces.filter(s =>
+    ? sorted.filter(s =>
         s.city.toLowerCase().includes(search.toLowerCase()) ||
         s.address?.toLowerCase().includes(search.toLowerCase()) ||
         s.spaceType.toLowerCase().includes(search.toLowerCase()) ||
         s.description?.toLowerCase().includes(search.toLowerCase())
       )
-    : spaces;
+    : sorted;
 
   const webTop = Platform.OS === "web" ? 67 : 0;
 
   return (
     <View style={[styles.root, { paddingTop: insets.top + webTop }]}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerSub}>Disponible ahora</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.headerSub}>
+            {geoLabel ? `Tu ubicación · ${geoLabel}` : "Disponible ahora"}
+          </Text>
           <Text style={styles.headerTitle}>Espacios de almacenaje</Text>
         </View>
+        {geoLabel && (
+          <View style={styles.geoPill}>
+            <Ionicons name="location" size={11} color={Colors.primary} />
+            <Text style={styles.geoPillText}>Ordenado por cercanía</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.searchRow}>
@@ -219,6 +275,20 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     letterSpacing: 0.5,
     textTransform: "uppercase",
+  },
+  geoPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: Colors.primaryLight + "30",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  geoPillText: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 11,
+    color: Colors.primary,
   },
   headerTitle: {
     fontFamily: "Inter_700Bold",

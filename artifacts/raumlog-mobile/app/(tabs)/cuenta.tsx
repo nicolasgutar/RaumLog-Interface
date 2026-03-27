@@ -94,6 +94,7 @@ export default function CuentaScreen() {
       ? [{ icon: "home-outline", label: "Panel de anfitrión", onPress: () => router.push("/(tabs)/dashboard") }]
       : [{ icon: "calendar-outline", label: "Mis reservas", onPress: () => router.push("/(tabs)/reservas") }]),
     { icon: "search-outline", label: "Buscar espacios", onPress: () => router.push("/(tabs)/") },
+    { icon: "help-circle-outline", label: "Centro de Ayuda", onPress: () => router.push("/soporte"), color: Colors.primaryDark },
     { icon: "information-circle-outline", label: "Acerca de RaumLog", onPress: () => {}, color: Colors.textSecondary },
     { icon: "log-out-outline", label: "Cerrar sesión", onPress: handleLogout, color: Colors.error },
   ];

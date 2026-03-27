@@ -12,8 +12,10 @@ import AdminFinanzas from "@/pages/AdminFinanzas";
 import HostDashboard from "@/pages/HostDashboard";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Soporte from "@/pages/Soporte";
 import NotFound from "@/pages/not-found";
 import ScrollToTop from "@/components/ScrollToTop";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const queryClient = new QueryClient();
 
@@ -36,8 +38,10 @@ function App() {
           <Route path="/admin/finanzas" element={<AdminFinanzas />} />
           <Route path="/terminos-y-condiciones" element={<TermsAndConditions />} />
           <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
+          <Route path="/soporte" element={<Soporte />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <WhatsAppButton />
       </BrowserRouter>
     </QueryClientProvider>
   );

@@ -1,0 +1,45 @@
+Objetivo: Transformar el proyecto React actual en una experiencia de aplicación móvil nativa (Mobile-First / PWA), implementando la identidad de marca completa de RaumLog, canales de soporte omnicanal, cumplimiento legal y características avanzadas de UX móvil.
+
+1. Identidad de Marca y UI (Sistema de Diseño Móvil):
+
+App Icon & Splash Screen: Utiliza el archivo de imagen adjunto como el ícono oficial de la aplicación. Configura el manifiesto (manifest.json) y genera los iconos en todos los tamaños necesarios para iOS y Android. Crea una pantalla de carga (Splash Screen) con este logo centrado sobre fondo blanco #FFFFF que aparezca al iniciar la app.
+
+Branding System: Asegura que todos los componentes visuales utilicen de manera consistente la paleta #2C5E8D, #AECBE9, #FFFFF, #D8CFC3. Los títulos deben usar Franklin Gothic y el cuerpo Microsoft New Tai Lue.
+
+2. Navegación y UX "App-Like" (Nativa):
+
+Tab Bar Inferior (Navegación Principal): En vistas móviles, sustituye el menú de hamburguesa por una barra de navegación inferior persistente con íconos (usando Lucide React) para: Inicio, Buscar, Mis Reservas, Perfil.
+
+Interacciones Nativas: Implementa la función de deslizar hacia abajo para actualizar (Pull-to-Refresh) en los dashboards. Asegura que todas las transiciones entre vistas sean fluidas y sin recargas de página.
+
+3. Soporte, Contacto y Redes (Omnicanal):
+
+WhatsApp Flotante: Añade un botón flotante de WhatsApp en la esquina inferior derecha que, al tocarlo, abra un chat hacia el número corporativo de RaumLog con el mensaje predefinido: "Hola RaumLog, necesito ayuda con un espacio de almacenamiento".
+
+Centro de Ayuda: Crea una vista de /soporte que incluya:
+
+Email: Botón para "Enviar Correo" que abra la app de mail predeterminada hacia el correo de COALGE S.A.S.
+
+Redes Sociales: Enlaces funcionales a los perfiles de Instagram, Facebook y LinkedIn de RaumLog.
+
+4. Cumplimiento Legal y Confianza (Compliance):
+
+Rutas Legales: Crear vistas estáticas e indexables para:
+
+Términos y Condiciones: Incluyendo la cláusula de comisión híbrida (20% < 6 meses / 1 mes > 6 meses).
+
+Política de Privacidad: Conforme a la Ley 1581 de Protección de Datos en Colombia (Habeas Data).
+
+Validación de Registro: Implementar un checkbox obligatorio en el formulario de registro donde el usuario acepte explícitamente estas políticas.
+
+5. Funcionalidades Avanzadas (El Plus):
+
+Geolocalización: Integra la API de geolocalización del navegador (navigator.geolocation) para intentar detectar la ubicación del usuario y ordenar los resultados de búsqueda mostrando primero los espacios más cercanos en Medellín.
+
+Lógica de Notificaciones Push (Simulada): Crea una infraestructura básica (NotificationContext) para manejar notificaciones. Simular (vía console.log) la recepción de una notificación cuando un anfitrión apruebe un espacio o un pago sea exitoso.
+
+Requerimientos Técnicos:
+
+Manejar todos los nuevos estados de la app (geolocalización, notificaciones, modo de navegación) mediante Context API o Zustand.
+
+Asegurar que el diseño sea 100% responsivo, fluido y mobile-first, optimizado para ser "envoluble" en Capacitor o Cordova en el futuro.
