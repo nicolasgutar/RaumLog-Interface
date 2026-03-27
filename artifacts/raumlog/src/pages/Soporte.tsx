@@ -46,7 +46,7 @@ export default function Soporte() {
 
           {/* Email */}
           <a
-            href="mailto:info@coalge.com.co?subject=Ayuda%20RaumLog"
+            href="mailto:contacto@raumlog.com?subject=Ayuda%20RaumLog"
             className="flex items-center gap-5 bg-white rounded-2xl p-5 shadow-sm border border-[#AECBE9]/30 hover:border-[#2C5E8D]/40 hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 bg-[#2C5E8D]/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-[#2C5E8D]/20 transition-colors">
@@ -54,7 +54,7 @@ export default function Soporte() {
             </div>
             <div>
               <p className="font-semibold text-[#2C5E8D] text-base">Correo electrónico</p>
-              <p className="text-sm text-[#2C5E8D]/60">info@coalge.com.co · COALGE S.A.S.</p>
+              <p className="text-sm text-[#2C5E8D]/60">contacto@raumlog.com · COALGE S.A.S.</p>
             </div>
             <span className="ml-auto text-xs font-semibold text-[#2C5E8D] bg-[#2C5E8D]/10 px-3 py-1.5 rounded-full">
               Enviar correo
@@ -98,7 +98,7 @@ export default function Soporte() {
 
         <div className="mt-10 bg-[#2C5E8D]/5 rounded-2xl p-6 border border-[#AECBE9]/30">
           <p className="text-sm text-[#2C5E8D]/70 leading-relaxed">
-            <strong className="text-[#2C5E8D]">COALGE S.A.S.</strong> · NIT 901.234.567-8 · Medellín, Antioquia, Colombia.{" "}
+            <strong className="text-[#2C5E8D]">COALGE S.A.S.</strong> · NIT 902.029.993-7 · Medellín, Antioquia, Colombia.{" "}
             Horario de atención: Lunes a Viernes 8am–6pm · Sábados 9am–1pm.
           </p>
         </div>

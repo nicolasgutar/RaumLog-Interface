@@ -1,6 +1,6 @@
 import { MessageCircle } from "lucide-react";
 
-const WA_NUMBER = "573001234567";
+const WA_NUMBER = "573054162141";
 const WA_MESSAGE = encodeURIComponent("Hola RaumLog, necesito ayuda con un espacio de almacenamiento");
 const WA_URL = `https://wa.me/${WA_NUMBER}?text=${WA_MESSAGE}`;
 
