@@ -6,11 +6,10 @@
  * principales: "Almacena" y "Gana como anfitrión".
  */
 import { Link } from "react-router-dom";
-import { MapPin, Shield, Star, ArrowRight } from "lucide-react";
+import { MapPin, Shield, ArrowRight } from "lucide-react";
 
 const STATS = [
   { icon: MapPin, label: "Ciudades", value: "2" },
-  { icon: Star,   label: "Calificación", value: "4.9" },
   { icon: Shield, label: "Contratos digitales", value: "100%" },
 ];
 
