@@ -164,7 +164,7 @@ function ContractView({ space, guestName, guestEmail, guestPhone, checkIn, check
         <div className="bg-[#AECBE9]/10 rounded-lg p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-[#2C5E8D]/60 mb-2">DEPOSITARIO (Anfitrión)</p>
           <p className="font-semibold">{space.ownerEmail}</p>
-          <p className="text-xs text-[#2C5E8D]/70">Gestionado por RaumLog S.A.S.</p>
+          <p className="text-xs text-[#2C5E8D]/70">Plataforma operada por COALGE S.A.S.</p>
         </div>
       </div>
 
@@ -218,7 +218,7 @@ function ContractView({ space, guestName, guestEmail, guestPhone, checkIn, check
 
       <div className="text-xs text-[#2C5E8D]/60 space-y-1.5 border-t border-[#AECBE9]/30 pt-3">
         <p><strong className="text-[#2C5E8D]">Cláusula 1 – Objeto y Naturaleza Jurídica:</strong> El Depositario concede al Depositante una licencia temporal de uso del Espacio para el almacenamiento de sus Artículos Almacenados por la duración pactada. Esta relación <em>no constituye un contrato de arrendamiento</em>; el Depositante renuncia a reclamar derechos de tenencia, prima comercial o renovación automática. El Depositario retiene en todo momento la posesión del inmueble (T&C §1.2).</p>
-        <p><strong className="text-[#2C5E8D]">Cláusula 2 – Intermediación y Exclusión de Responsabilidad:</strong> COALGE S.A.S. actúa exclusivamente como intermediario tecnológico y agente de cobro. La custodia física de los bienes es responsabilidad exclusiva del Depositario. COALGE no responderá por daños causados por fuerza mayor, caso fortuito, culpa de la víctima o de terceros, ni por ninguna circunstancia ajena a la intermediación. La responsabilidad máxima de COALGE queda limitada al menor entre: (i) las tarifas de servicio pagadas en los últimos 12 meses, o (ii) $300.000 COP (T&C §2.1, §22.2).</p>
+        <p><strong className="text-[#2C5E8D]">Cláusula 2 – Intermediación y Asunción de Riesgo:</strong> COALGE S.A.S. actúa exclusivamente como intermediario tecnológico y agente de cobro a través de la plataforma RaumLog; no es depositario, custodio ni aseguradora de los bienes. El Depositante declara conocer y aceptar que, al entregar los bienes al Depositario, asume de manera voluntaria e integral todos los riesgos derivados de su almacenamiento, incluyendo pérdida, deterioro, robo o daño. RaumLog no ofrece pólizas de seguro ni cobertura alguna sobre los bienes almacenados. El Depositante es el único responsable de gestionar, por su cuenta y riesgo, los seguros que considere necesarios (T&C §2.1, §22.2).</p>
         <p><strong className="text-[#2C5E8D]">Cláusula 3 – Pagos Exclusivos y Sanción por Evasión:</strong> Todos los pagos derivados de esta Reserva deberán realizarse obligatoriamente a través de la plataforma RaumLog usando la pasarela Wompi. Cualquier acuerdo de pago por fuera de la plataforma faculta a COALGE a cancelar inmediatamente ambas cuentas y cobrar una cláusula penal equivalente a seis (6) meses de la Tarifa Total Mensual. Los pagos al Anfitrión se liquidarán semanalmente cada viernes, neto de comisiones, IVA y costos de pasarela (T&C §8.1, §8.4).</p>
         <p><strong className="text-[#2C5E8D]">Cláusula 4 – Artículos Prohibidos y Valor Máximo Declarado:</strong> El Depositante se obliga a no almacenar bienes cuyo valor supere los <strong>$50.000.000 COP</strong>. Quedan expresamente prohibidos: explosivos, combustibles, material biológico, pesticidas, residuos, armas, drogas, bienes robados, alimentos perecederos, animales, baterías de litio de gran capacidad y cualquier objeto ilegal conforme a la legislación colombiana. El incumplimiento faculta al Depositario a terminar inmediatamente la Reserva y aplicar el protocolo de abandono (T&C §11.11, §14.2).</p>
         <p><strong className="text-[#2C5E8D]">Cláusula 5 – Terminación, Disputas y Arbitraje:</strong> El contrato finaliza en la fecha de salida pactada; la prórroga requiere nueva solicitud y pago. En caso de mora superior a 30 días, COALGE podrá vender, donar o destruir los Artículos Almacenados. Toda controversia se resolverá primero por arreglo directo (30 días); de no lograrse, mediante Tribunal de Arbitramento ante la <em>Cámara de Comercio de Medellín para Antioquia</em>, cuyo laudo será en derecho. Quedan excluidas del arbitraje las acciones ejecutivas de cobro (T&C §16, §25).</p>
@@ -228,12 +228,16 @@ function ContractView({ space, guestName, guestEmail, guestPhone, checkIn, check
         <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
           <p className="font-semibold text-[#2C5E8D]">{guestName}</p>
           <p>Depositante · Firma electrónica</p>
+          <p className="font-mono text-[#2C5E8D]/40">{guestEmail}</p>
         </div>
         <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
-          <p className="font-semibold text-[#2C5E8D]">RaumLog S.A.S.</p>
-          <p>En representación del Depositario</p>
+          <p className="font-semibold text-[#2C5E8D]">{space.ownerEmail}</p>
+          <p>Depositario (Anfitrión) · Firma electrónica</p>
         </div>
       </div>
+      <p className="text-[9px] text-center text-[#2C5E8D]/30 border-t border-[#AECBE9]/20 pt-2">
+        Intermediado por COALGE S.A.S. a través de la plataforma RaumLog · NIT 901.234.567-8 · info@coalge.com.co
+      </p>
     </div>
   );
 }
@@ -287,7 +291,7 @@ function FichaDeposito({ space, guestName, guestEmail, checkIn, checkOut, declar
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs">
         <p className="font-semibold text-amber-800 mb-1">Valor declarado de los bienes</p>
         <p className="text-amber-900 text-base font-bold">{formatCOP(Number(declaredValue) || 0)}</p>
-        <p className="text-amber-700 mt-1">La responsabilidad máxima está limitada a este valor.</p>
+        <p className="text-amber-700 mt-1">El Depositante declara este valor como referencia del inventario entregado al Depositario.</p>
       </div>
 
       {checkinNotes && (
@@ -300,16 +304,17 @@ function FichaDeposito({ space, guestName, guestEmail, checkIn, checkOut, declar
       <div className="grid grid-cols-2 gap-4 pt-2">
         <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
           <p className="font-semibold text-[#2C5E8D]">{guestName}</p>
-          <p>Firma electrónica del cliente</p>
+          <p>Depositante · Firma electrónica</p>
+          <p className="font-mono text-[#2C5E8D]/40">{guestEmail}</p>
         </div>
         <div className="border-t-2 border-[#2C5E8D]/20 pt-2 text-center text-xs text-[#2C5E8D]/50">
-          <p className="font-semibold text-[#2C5E8D]">RaumLog S.A.S.</p>
-          <p>Plataforma intermediaria</p>
+          <p className="font-semibold text-[#2C5E8D]">{space.ownerEmail}</p>
+          <p>Depositario (Anfitrión) · Firma electrónica</p>
         </div>
       </div>
 
       <p className="text-[9px] text-center text-[#2C5E8D]/30 border-t border-[#AECBE9]/20 pt-2">
-        Este documento tiene validez contractual como soporte del estado en que se recibieron los bienes al inicio del período de almacenamiento. Generado automáticamente por RaumLog.
+        Este documento tiene validez contractual como soporte del estado en que se recibieron los bienes al inicio del período de almacenamiento. Generado automáticamente por la plataforma RaumLog, operada por COALGE S.A.S.
       </p>
     </div>
   );
@@ -498,7 +503,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                 <input type="text" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)}
                   className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 text-sm"
                   placeholder="ej. 2000000" />
-                <p className="text-xs text-[#2C5E8D]/50 mt-1">La responsabilidad se limita al valor declarado.</p>
+                <p className="text-xs text-[#2C5E8D]/50 mt-1">El usuario asume el riesgo al depositar sus bienes.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-[#2C5E8D] mb-2">
@@ -809,7 +814,7 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2C5E8D]/40 mt-1.5 flex-shrink-0" />
-                    <span><strong className="text-[#2C5E8D]">Responsabilidad:</strong> Limitada al valor declarado en el Acta de Entrega.</span>
+                    <span><strong className="text-[#2C5E8D]">Riesgo:</strong> El usuario asume el riesgo al depositar. RaumLog no ofrece pólizas de seguro.</span>
                   </li>
                 </ul>
                 <label className="flex items-center gap-3 cursor-pointer">
