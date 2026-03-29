@@ -13,6 +13,8 @@ import HostDashboard from "@/pages/HostDashboard";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Soporte from "@/pages/Soporte";
+import OnboardingPage from "@/pages/OnboardingPage";
+import ProfilePage from "@/pages/ProfilePage";
 import NotFound from "@/pages/not-found";
 import ScrollToTop from "@/components/ScrollToTop";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -30,7 +32,9 @@ function App() {
           <Route path="/encuentra-tu-espacio" element={<FindSpace />} />
           <Route path="/ofrece-tu-espacio" element={<OfferSpace />} />
           <Route path="/contacto" element={<Contact />} />
-          <Route path="/mi-cuenta" element={<AuthPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/perfil" element={<ProfilePage />} />
           <Route path="/dashboard/host" element={<HostDashboard />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />

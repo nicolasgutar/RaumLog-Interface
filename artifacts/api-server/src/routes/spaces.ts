@@ -1,37 +1,21 @@
 import { Router } from "express";
 import { db, spacesTable, insertSpaceSchema } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
+import { DrizzleSpaceRepository } from "../infrastructure/repositories/DrizzleSpaceRepository";
+import { SpaceService } from "../application/services/SpaceService";
+import { SpaceController } from "../api/controllers/SpaceController";
 
 const router = Router();
 
-router.get("/spaces/public", async (req, res) => {
-  const { city } = req.query as { city?: string };
-  let query = db
-    .select()
-    .from(spacesTable)
-    .where(and(eq(spacesTable.status, "approved"), eq(spacesTable.published, true)));
-  const spaces = await query.orderBy(spacesTable.createdAt);
-  const filtered = city ? spaces.filter(s => s.city.toLowerCase().includes(city.toLowerCase())) : spaces;
-  return res.json({ spaces: filtered });
-});
+// Dependency Injection
+const spaceRepo = new DrizzleSpaceRepository();
+const spaceService = new SpaceService(spaceRepo);
+const spaceController = new SpaceController(spaceService);
 
-router.get("/spaces/public/:id", async (req, res) => {
-  const id = Number(req.params["id"]);
-  const [space] = await db
-    .select()
-    .from(spacesTable)
-    .where(and(eq(spacesTable.id, id), eq(spacesTable.status, "approved"), eq(spacesTable.published, true)));
-  if (!space) return res.status(404).json({ error: "Espacio no encontrado" });
-  return res.json({ space });
-});
+import { firebaseAuthMiddleware } from "../infrastructure/auth/FirebaseMiddleware";
 
-router.post("/spaces", async (req, res) => {
-  const parsed = insertSpaceSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Datos inválidos", details: parsed.error.issues });
-  }
-  const [space] = await db.insert(spacesTable).values(parsed.data).returning();
-  return res.status(201).json({ space });
-});
+// Marketplace Route (Paginated & Filterable)
+router.get("/spaces", (req, res) => spaceController.getSpaces(req, res));
+router.post("/spaces", firebaseAuthMiddleware, (req, res) => spaceController.createSpace(req, res));
 
 export default router;
