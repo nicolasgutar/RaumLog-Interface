@@ -7,5 +7,6 @@ const userController = new UserController();
 
 router.get('/profile', firebaseAuthMiddleware, (req, res) => userController.getProfile(req, res));
 router.post('/onboarding/step1', firebaseAuthMiddleware, (req, res) => userController.completeStep1(req, res));
+router.post('/become-host', firebaseAuthMiddleware, (req, res) => userController.becomeHost(req, res));
 
 export default router;

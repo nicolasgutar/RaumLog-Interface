@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
   Search, MapPin, X, ChevronLeft, ChevronRight,
-  Calendar, CheckCircle, AlertCircle, 
+  Calendar, CheckCircle, AlertCircle,
   Package, Clock, ThumbsUp, Banknote, FileText, Shield,
   Box, Filter,
 } from "lucide-react";
@@ -46,31 +46,6 @@ const STATUS_FLOW = [
   { key: "paid", label: "Pagada", icon: Banknote },
   { key: "in_storage", label: "Almacenando", icon: Package },
 ];
-
-function StatusTracker({ current }: { current: string }) {
-  const idx = STATUS_FLOW.findIndex((s) => s.key === current);
-  return (
-    <div className="flex items-center gap-1 mb-5">
-      {STATUS_FLOW.map((s, i) => {
-        const Icon = s.icon;
-        const done = i <= idx;
-        return (
-          <div key={s.key} className="flex items-center flex-1">
-            <div className="flex flex-col items-center gap-1 flex-shrink-0">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${done ? "bg-[#2C5E8D]" : "bg-gray-200"}`}>
-                <Icon className={`w-3.5 h-3.5 ${done ? "text-white" : "text-gray-400"}`} />
-              </div>
-              <span className={`text-[10px] text-center leading-tight w-14 ${done ? "text-[#2C5E8D] font-medium" : "text-gray-400"}`}>{s.label}</span>
-            </div>
-            {i < STATUS_FLOW.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 mb-4 ${i < idx ? "bg-[#2C5E8D]" : "bg-gray-200"}`} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 function ContractView({ space, guestName, guestEmail, guestPhone, checkIn, checkOut, days, months, publicPrice, reservationId }: {
   space: Space; guestName: string; guestEmail: string; guestPhone: string;
@@ -277,147 +252,147 @@ function SpaceModal({ space, onClose }: { space: Space; onClose: () => void }) {
     <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {step === "success" && (
-           <div className="p-10 text-center">
-             <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-8 h-8" />
-             </div>
-             <h2 className="text-2xl font-bold text-[#2C5E8D] mb-2 uppercase tracking-wide">¡Reserva Completada!</h2>
-             <p className="text-gray-500 mb-8 max-w-md mx-auto small text-sm leading-relaxed">Tu almacenamiento ha comenzado formalmente. Hemos generado el acta de depósito.</p>
-             <FichaDeposito 
-                space={space} guestName={guestInfo.name} guestEmail={guestInfo.email} 
-                checkIn={checkIn} checkOut={checkOut} declaredValue={declaredValue}
-                checkinNotes={checkinNotes} photoCount={checkinPhotos.length}
-                reservationId={reservationId}
-             />
-             <button onClick={onClose} className="w-full max-w-xs mt-10 py-4 bg-[#2C5E8D] text-white font-semibold rounded-xl hover:bg-[#1a3d5c] transition-all">Regresar al Marketplace</button>
-           </div>
+          <div className="p-10 text-center">
+            <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-[#2C5E8D] mb-2 uppercase tracking-wide">¡Reserva Completada!</h2>
+            <p className="text-gray-500 mb-8 max-w-md mx-auto small text-sm leading-relaxed">Tu almacenamiento ha comenzado formalmente. Hemos generado el acta de depósito.</p>
+            <FichaDeposito
+              space={space} guestName={guestInfo.name} guestEmail={guestInfo.email}
+              checkIn={checkIn} checkOut={checkOut} declaredValue={declaredValue}
+              checkinNotes={checkinNotes} photoCount={checkinPhotos.length}
+              reservationId={reservationId}
+            />
+            <button onClick={onClose} className="w-full max-w-xs mt-10 py-4 bg-[#2C5E8D] text-white font-semibold rounded-xl hover:bg-[#1a3d5c] transition-all">Regresar al Marketplace</button>
+          </div>
         )}
-        
+
         {step === "info" && (
           <div className="flex flex-col lg:flex-row">
             <div className="w-full lg:w-1/2 relative h-[300px] lg:h-auto bg-gray-100">
-               <img src={space.images[currentImg]} className="w-full h-full object-cover" />
-               <button onClick={onClose} className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md"><X className="w-5 h-5 text-gray-500" /></button>
-               {space.images.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/40 p-2 rounded-full px-4">
-                     <button onClick={prev} className="text-white"><ChevronLeft className="w-5 h-5" /></button>
-                     <span className="text-xs text-white font-medium">{currentImg + 1} / {space.images.length}</span>
-                     <button onClick={next} className="text-white"><ChevronRight className="w-5 h-5" /></button>
-                  </div>
-               )}
+              <img src={space.images[currentImg]} className="w-full h-full object-cover" />
+              <button onClick={onClose} className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md"><X className="w-5 h-5 text-gray-500" /></button>
+              {space.images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/40 p-2 rounded-full px-4">
+                  <button onClick={prev} className="text-white"><ChevronLeft className="w-5 h-5" /></button>
+                  <span className="text-xs text-white font-medium">{currentImg + 1} / {space.images.length}</span>
+                  <button onClick={next} className="text-white"><ChevronRight className="w-5 h-5" /></button>
+                </div>
+              )}
             </div>
             <div className="w-full lg:w-1/2 p-8 flex flex-col justify-between">
-               <div>
-                  <div className="flex justify-between items-center mb-6">
-                     <span className="bg-[#AECBE9]/30 text-[#2C5E8D] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">{space.category}</span>
-                     <div className="flex items-center gap-1.5 text-gray-400">
-                        <Calendar className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">{space.accessType}</span>
-                     </div>
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <span className="bg-[#AECBE9]/30 text-[#2C5E8D] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">{space.category}</span>
+                  <div className="flex items-center gap-1.5 text-gray-400">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{space.accessType}</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-[#2C5E8D] mb-4 uppercase tracking-wide">{space.spaceType} en {space.city}</h2>
-                  <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-6">
-                     <MapPin className="w-3.5 h-3.5" />
-                     <span className="uppercase tracking-tight">{space.address}</span>
+                </div>
+                <h2 className="text-2xl font-bold text-[#2C5E8D] mb-4 uppercase tracking-wide">{space.spaceType} en {space.city}</h2>
+                <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-6">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span className="uppercase tracking-tight">{space.address}</span>
+                </div>
+                <p className="text-gray-500 text-sm leading-relaxed mb-8">{space.description}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="text-center w-full">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Precio Mensual</p>
+                    <p className="text-2xl font-bold text-[#2C5E8D]">{formatCOP(Number(space.priceMonthlyNum))}</p>
                   </div>
-                  <p className="text-gray-500 text-sm leading-relaxed mb-8">{space.description}</p>
-               </div>
-               
-               <div className="space-y-4">
-                  <div className="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-100">
-                     <div className="text-center w-full">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Precio Mensual</p>
-                        <p className="text-2xl font-bold text-[#2C5E8D]">{formatCOP(Number(space.priceMonthlyNum))}</p>
-                     </div>
-                  </div>
-                  <button onClick={() => setStep("booking")} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl hover:bg-[#1a3d5c] transition-all uppercase tracking-widest">Solicitar Reserva</button>
-               </div>
+                </div>
+                <button onClick={() => setStep("booking")} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl hover:bg-[#1a3d5c] transition-all uppercase tracking-widest">Solicitar Reserva</button>
+              </div>
             </div>
           </div>
         )}
 
         {step !== "info" && step !== "success" && (
-           <div className="p-8">
-              <button 
-                onClick={() => setStep("info")} 
-                className="mb-8 flex items-center gap-2 text-[#2C5E8D] font-bold text-xs uppercase tracking-widest"
-              >
-                <ChevronLeft className="w-4 h-4" /> Volver al Detalle
-              </button>
-              
-              {step === "booking" && (
-                 <div className="max-w-xl mx-auto space-y-8">
-                    <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Datos de la Reserva</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div>
-                          <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Fecha Ingreso *</label>
-                          <input type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
-                       </div>
-                       <div>
-                          <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Fecha Salida *</label>
-                          <input type="date" min={checkIn || today} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
-                       </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Nombre Completo *</label>
-                      <input type="text" placeholder="Tu nombre" value={guestInfo.name} onChange={(e) => setGuestInfo({ name: e.target.value })} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none mb-4" />
-                      <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Email *</label>
-                      <input type="email" placeholder="tu@email.com" value={guestInfo.email} onChange={(e) => setGuestInfo({ email: e.target.value })} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
-                    </div>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="w-4 h-4 accent-[#2C5E8D]" />
-                      <span className="text-xs font-medium text-[#2C5E8D]/70 uppercase tracking-tighter">Acepto los términos y condiciones de RaumLog</span>
-                    </label>
-                    <button onClick={handleBook} disabled={loading} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Procesando..." : "Continuar con la Reserva"}</button>
-                 </div>
-              )}
-              
-              {step === "processing" && (
-                <div className="py-20 text-center">
-                  <div className="w-12 h-12 border-4 border-[#AECBE9] border-t-[#2C5E8D] rounded-full animate-spin mx-auto mb-6" />
-                  <p className="font-bold text-[#2C5E8D] uppercase tracking-widest">Validando disponibilidad...</p>
-                </div>
-              )}
+          <div className="p-8">
+            <button
+              onClick={() => setStep("info")}
+              className="mb-8 flex items-center gap-2 text-[#2C5E8D] font-bold text-xs uppercase tracking-widest"
+            >
+              <ChevronLeft className="w-4 h-4" /> Volver al Detalle
+            </button>
 
-              {step === "payment" && (
-                 <div className="max-w-xl mx-auto space-y-8">
-                    <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Finalizar Pago</h2>
-                    <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-center">
-                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Valor total a pagar</p>
-                       <p className="text-4xl font-bold text-[#2C5E8D] mb-2">{formatCOP(publicPrice)}</p>
-                       <p className="text-[10px] text-gray-400">Incluye seguros y tarifa de plataforma</p>
-                    </div>
-                    <button onClick={handlePay} disabled={loading} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Abriendo Pasarela..." : `Pagar Ahora`}</button>
-                 </div>
-              )}
-
-              {step === "contract" && (
-                <div className="space-y-8">
-                   <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Contrato de Almacenamiento</h2>
-                   <ContractView 
-                      space={space} guestName={guestInfo.name} guestEmail={guestInfo.email} guestPhone={guestInfo.phone}
-                      checkIn={checkIn} checkOut={checkOut} days={days} months={months}
-                      publicPrice={publicPrice} platformCut={platformCut} breakdown={breakdown}
-                      reservationId={reservationId} wompiRef={wompiResult?.reference || ""}
-                   />
-                   <button onClick={() => setStep("checkin")} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">Firmar y Continuar al Check-in</button>
+            {step === "booking" && (
+              <div className="max-w-xl mx-auto space-y-8">
+                <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Datos de la Reserva</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Fecha Ingreso *</label>
+                    <input type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Fecha Salida *</label>
+                    <input type="date" min={checkIn || today} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
+                  </div>
                 </div>
-              )}
-
-              {step === "checkin" && (
-                <div className="max-w-xl mx-auto space-y-8">
-                   <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Acta de Entrega</h2>
-                   <div className="space-y-6">
-                      <div>
-                        <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Valor Declarado de Bienes (COP) *</label>
-                        <input type="number" placeholder="Ej: 1000000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
-                      </div>
-                      <textarea placeholder="Notas adicionales sobre el estado de los bienes..." value={checkinNotes} onChange={(e) => setCheckinNotes(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none h-32 resize-none" />
-                      <button onClick={handleCheckin} disabled={loading || !declaredValue} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">Finalizar Entrega</button>
-                   </div>
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Nombre Completo *</label>
+                  <input type="text" placeholder="Tu nombre" value={guestInfo.name} onChange={(e) => setGuestInfo({ name: e.target.value })} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none mb-4" />
+                  <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Email *</label>
+                  <input type="email" placeholder="tu@email.com" value={guestInfo.email} onChange={(e) => setGuestInfo({ email: e.target.value })} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
                 </div>
-              )}
-           </div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="w-4 h-4 accent-[#2C5E8D]" />
+                  <span className="text-xs font-medium text-[#2C5E8D]/70 uppercase tracking-tighter">Acepto los términos y condiciones de RaumLog</span>
+                </label>
+                <button onClick={handleBook} disabled={loading} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Procesando..." : "Continuar con la Reserva"}</button>
+              </div>
+            )}
+
+            {step === "processing" && (
+              <div className="py-20 text-center">
+                <div className="w-12 h-12 border-4 border-[#AECBE9] border-t-[#2C5E8D] rounded-full animate-spin mx-auto mb-6" />
+                <p className="font-bold text-[#2C5E8D] uppercase tracking-widest">Validando disponibilidad...</p>
+              </div>
+            )}
+
+            {step === "payment" && (
+              <div className="max-w-xl mx-auto space-y-8">
+                <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Finalizar Pago</h2>
+                <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-center">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Valor total a pagar</p>
+                  <p className="text-4xl font-bold text-[#2C5E8D] mb-2">{formatCOP(publicPrice)}</p>
+                  <p className="text-[10px] text-gray-400">Incluye seguros y tarifa de plataforma</p>
+                </div>
+                <button onClick={handlePay} disabled={loading} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Abriendo Pasarela..." : `Pagar Ahora`}</button>
+              </div>
+            )}
+
+            {step === "contract" && (
+              <div className="space-y-8">
+                <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Contrato de Almacenamiento</h2>
+                <ContractView
+                  space={space} guestName={guestInfo.name} guestEmail={guestInfo.email} guestPhone={guestInfo.phone}
+                  checkIn={checkIn} checkOut={checkOut} days={days} months={months}
+                  publicPrice={publicPrice} platformCut={platformCut} breakdown={breakdown}
+                  reservationId={reservationId} wompiRef={wompiResult?.reference || ""}
+                />
+                <button onClick={() => setStep("checkin")} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">Firmar y Continuar al Check-in</button>
+              </div>
+            )}
+
+            {step === "checkin" && (
+              <div className="max-w-xl mx-auto space-y-8">
+                <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide text-center">Acta de Entrega</h2>
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Valor Declarado de Bienes (COP) *</label>
+                    <input type="number" placeholder="Ej: 1000000" value={declaredValue} onChange={(e) => setDeclaredValue(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
+                  </div>
+                  <textarea placeholder="Notas adicionales sobre el estado de los bienes..." value={checkinNotes} onChange={(e) => setCheckinNotes(e.target.value)} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none h-32 resize-none" />
+                  <button onClick={handleCheckin} disabled={loading || !declaredValue} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">Finalizar Entrega</button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -432,7 +407,7 @@ export default function FindSpace() {
   const [query, setQuery] = useState<SpacesQuery>({
     limit: 6,
     offset: 0,
-    category: "General",
+    // category: "General", // Removed to show everything by default
   });
 
   // Guest restriction: Redirect if searching, filtering or paginating beyond page 1
@@ -448,10 +423,10 @@ export default function FindSpace() {
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
 
   const updateQuery = (updates: Partial<SpacesQuery>) => {
-    setQuery((prev: SpacesQuery) => ({ 
-      ...prev, 
-      ...updates, 
-      offset: updates.offset !== undefined ? updates.offset : 0 
+    setQuery((prev: SpacesQuery) => ({
+      ...prev,
+      ...updates,
+      offset: updates.offset !== undefined ? updates.offset : 0
     }));
   };
 
@@ -468,8 +443,8 @@ export default function FindSpace() {
 
   const onSelectSpace = (space: SpaceDTO) => {
     if (!user) {
-        navigate("/auth?redirigir=/encuentra-tu-espacio", { replace: true });
-        return;
+      navigate("/auth?redirigir=/encuentra-tu-espacio", { replace: true });
+      return;
     }
     setSelectedSpace(space);
   };
@@ -485,7 +460,7 @@ export default function FindSpace() {
     <div className="min-h-screen flex flex-col bg-white font-body">
       <Header />
       {selectedSpace && <SpaceModal space={selectedSpace} onClose={() => setSelectedSpace(null)} />}
-      
+
       <main className="flex-1">
         {/* Simple Hero Section inspired by original */}
         <section className="bg-[#2C5E8D] py-16 px-4">
@@ -493,16 +468,16 @@ export default function FindSpace() {
             <h1 className="text-4xl lg:text-5xl text-white font-bold mb-8 uppercase tracking-wide leading-tight">
               Encuentra tu espacio ideal
             </h1>
-            
+
             <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input 
-                  type="text" 
-                  className="w-full bg-white border-none rounded-lg py-4 pl-12 pr-4 text-[#2C5E8D] placeholder-gray-400 font-medium outline-none shadow-lg" 
-                  placeholder="Ciudad, barrio o tipo de espacio..." 
-                  value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
+                <input
+                  type="text"
+                  className="w-full bg-white border-none rounded-lg py-4 pl-12 pr-4 text-[#2C5E8D] placeholder-gray-400 font-medium outline-none shadow-lg"
+                  placeholder="Ciudad, barrio o tipo de espacio..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <button type="submit" className="bg-[#E8A838] px-8 py-4 rounded-lg font-bold text-[#1a3d5c] shadow-lg hover:bg-orange-400 transition-all uppercase tracking-wide">BUSCAR</button>
@@ -516,43 +491,43 @@ export default function FindSpace() {
               <h2 className="text-2xl font-bold text-[#2C5E8D] uppercase tracking-wide">Espacios Disponibles</h2>
               <div className="h-1 w-16 bg-[#E8A838] mt-2 rounded-full" />
             </div>
-            
-            <button 
-              onClick={() => setShowFilters(!showFilters)} 
+
+            <button
+              onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-6 py-3 rounded-lg border font-bold text-xs uppercase tracking-widest transition-all ${showFilters ? "bg-[#2C5E8D] text-white border-[#2C5E8D]" : "bg-white text-[#2C5E8D] border-[#AECBE9]/50 hover:bg-gray-50"}`}
             >
-              <Filter className="w-4 h-4" /> 
+              <Filter className="w-4 h-4" />
               {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
             </button>
           </div>
 
           {showFilters && (
             <div className="mb-12">
-              <FilterSidebar 
-                query={query} 
-                updateQuery={updateQuery} 
+              <FilterSidebar
+                query={query}
+                updateQuery={updateQuery}
                 totalResults={data?.meta?.totalCount || 0}
               />
             </div>
           )}
 
           {loading ? (
-             <div className="py-24 flex flex-col items-center justify-center">
-                <div className="w-10 h-10 border-4 border-[#AECBE9]/30 border-t-[#2C5E8D] rounded-full animate-spin mb-4" />
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cargando resultados...</p>
-             </div>
+            <div className="py-24 flex flex-col items-center justify-center">
+              <div className="w-10 h-10 border-4 border-[#AECBE9]/30 border-t-[#2C5E8D] rounded-full animate-spin mb-4" />
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cargando resultados...</p>
+            </div>
           ) : error ? (
-             <div className="py-16 bg-red-50 rounded-2xl border border-red-100 p-10 text-center max-w-xl mx-auto">
-                <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-red-800 mb-1 uppercase tracking-tight">Error de Conexión</h3>
-                <p className="text-red-600/70 text-sm leading-relaxed">{error.message}</p>
-             </div>
+            <div className="py-16 bg-red-50 rounded-2xl border border-red-100 p-10 text-center max-w-xl mx-auto">
+              <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-red-800 mb-1 uppercase tracking-tight">Error de Conexión</h3>
+              <p className="text-red-600/70 text-sm leading-relaxed">{error.message}</p>
+            </div>
           ) : data?.data.length === 0 ? (
-             <div className="py-24 text-center border-2 border-dashed border-gray-200 rounded-2xl">
-                <Box className="w-12 h-12 text-gray-300 mx-auto mb-4 opacity-40" />
-                <h3 className="text-xl font-bold text-gray-400 mb-2 uppercase">No hay resultados</h3>
-                <p className="text-gray-400 text-sm">Prueba ajustando los filtros o realizando otra búsqueda.</p>
-             </div>
+            <div className="py-24 text-center border-2 border-dashed border-gray-200 rounded-2xl">
+              <Box className="w-12 h-12 text-gray-300 mx-auto mb-4 opacity-40" />
+              <h3 className="text-xl font-bold text-gray-400 mb-2 uppercase">No hay resultados</h3>
+              <p className="text-gray-400 text-sm">Prueba ajustando los filtros o realizando otra búsqueda.</p>
+            </div>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -562,7 +537,7 @@ export default function FindSpace() {
               </div>
 
               <div className="mt-12">
-                <Pagination 
+                <Pagination
                   currentPage={currentPage}
                   totalPages={data?.meta?.totalPages || 0}
                   onPageChange={(p) => updateQuery({ offset: p * (query.limit || 6) })}
@@ -572,7 +547,7 @@ export default function FindSpace() {
           )}
         </section>
       </main>
-      
+
       <Footer />
     </div>
   );

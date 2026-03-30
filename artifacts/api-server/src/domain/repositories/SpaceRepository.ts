@@ -19,5 +19,16 @@ export interface SpaceRepository {
       totalPages: number;
     };
   }>;
+  findAllAdmin(options: {
+    limit?: number;
+    offset?: number;
+    ownerId?: string;
+  }): Promise<{
+    data: any[];
+    meta: {
+      totalCount: number;
+      totalPages: number;
+    };
+  }>;
   create(data: any): Promise<Space>;
 }

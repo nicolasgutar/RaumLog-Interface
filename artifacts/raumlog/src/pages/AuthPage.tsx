@@ -20,14 +20,14 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const redirectTo = params.get("redirigir") || (user?.role === "Anfitrión" ? "/dashboard/host" : "/encuentra-tu-espacio");
+  const redirectTo = params.get("redirigir") || (user?.role === "Anfitrión" ? "/perfil" : "/encuentra-tu-espacio");
 
   useEffect(() => {
     if (user && !initializing) {
       if (!user.isOnboardingComplete) {
-         navigate("/onboarding", { replace: true });
+        navigate("/onboarding", { replace: true });
       } else {
-         navigate(redirectTo, { replace: true });
+        navigate(redirectTo, { replace: true });
       }
     }
   }, [user, initializing, navigate, redirectTo]);
@@ -40,16 +40,16 @@ export default function AuthPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    
+
     if (mode === "register") {
-        if (form.password !== form.confirmPassword) {
-            setError("Las contraseñas no coinciden");
-            return;
-        }
-        if (!acceptedTerms) {
-            setError("Debes aceptar los Términos y la Política de Privacidad para registrarte");
-            return;
-        }
+      if (form.password !== form.confirmPassword) {
+        setError("Las contraseñas no coinciden");
+        return;
+      }
+      if (!acceptedTerms) {
+        setError("Debes aceptar los Términos y la Política de Privacidad para registrarte");
+        return;
+      }
     }
 
     setLoading(true);
@@ -69,25 +69,31 @@ export default function AuthPage() {
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
-        await signInWithGoogle();
+      await signInWithGoogle();
     } catch (err: any) {
-        setError(err.message);
+      setError(err.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   }
 
   if (initializing) {
-      return (
-          <div className="min-h-screen flex items-center justify-center bg-[#D8CFC3]/20">
-              <div className="w-8 h-8 border-4 border-t-transparent border-[#2C5E8D] rounded-full animate-spin"></div>
-          </div>
-      );
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#D8CFC3]/20">
+        <div className="w-8 h-8 border-4 border-t-transparent border-[#2C5E8D] rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#2C5E8D]/10 to-[#AECBE9]/20 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
+        <div className="mb-4">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-[#2C5E8D]/60 hover:text-[#2C5E8D] transition-colors font-medium group">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            Ir al menú principal
+          </Link>
+        </div>
         <div className="text-center mb-8">
           <Link to="/">
             <img src="/raumlog-logo-main.png" alt="RaumLog" className="h-16 w-auto mx-auto mb-4" />
@@ -101,7 +107,7 @@ export default function AuthPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-[#AECBE9]/30">
-        
+
           {/* Simplified Google Login - PRIMARY ACTION */}
           <button
             onClick={handleGoogleAuth}
@@ -166,34 +172,34 @@ export default function AuthPage() {
 
             {mode === "register" && (
               <>
-              <div>
-                <label className="block text-xs font-semibold text-[#2C5E8D] uppercase tracking-wider mb-1 px-1">Confirmar contraseña *</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AECBE9]" />
-                  <input
-                    type={showPass ? "text" : "password"}
-                    value={form.confirmPassword}
-                    onChange={(e) => field("confirmPassword", e.target.value)}
-                    required
-                    placeholder="Repite tu contraseña"
-                    autoComplete="new-password"
-                    className="w-full pl-9 pr-4 py-2.5 border border-[#AECBE9] rounded-lg text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 text-sm"
-                  />
+                <div>
+                  <label className="block text-xs font-semibold text-[#2C5E8D] uppercase tracking-wider mb-1 px-1">Confirmar contraseña *</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#AECBE9]" />
+                    <input
+                      type={showPass ? "text" : "password"}
+                      value={form.confirmPassword}
+                      onChange={(e) => field("confirmPassword", e.target.value)}
+                      required
+                      placeholder="Repite tu contraseña"
+                      autoComplete="new-password"
+                      className="w-full pl-9 pr-4 py-2.5 border border-[#AECBE9] rounded-lg text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 text-sm"
+                    />
+                  </div>
                 </div>
-              </div>
 
-               <div className="flex items-start gap-3 pt-1">
-                <input
-                  type="checkbox"
-                  id="accept-terms"
-                  checked={acceptedTerms}
-                  onChange={(e) => { setAcceptedTerms(e.target.checked); setError(""); }}
-                  className="mt-0.5 w-4 h-4 rounded border-[#AECBE9] text-[#2C5E8D] accent-[#2C5E8D] cursor-pointer flex-shrink-0"
-                />
-                <label htmlFor="accept-terms" className="text-[10px] text-[#2C5E8D]/70 leading-relaxed cursor-pointer">
-                  Acepto los <Link to="/terminos-y-condiciones" target="_blank" className="text-[#2C5E8D] font-bold underline">Términos</Link> y la <Link to="/politica-de-privacidad" target="_blank" className="text-[#2C5E8D] font-bold underline">Privacidad</Link> de RaumLog conforme a la Ley de datos de Colombia.
-                </label>
-              </div>
+                <div className="flex items-start gap-3 pt-1">
+                  <input
+                    type="checkbox"
+                    id="accept-terms"
+                    checked={acceptedTerms}
+                    onChange={(e) => { setAcceptedTerms(e.target.checked); setError(""); }}
+                    className="mt-0.5 w-4 h-4 rounded border-[#AECBE9] text-[#2C5E8D] accent-[#2C5E8D] cursor-pointer flex-shrink-0"
+                  />
+                  <label htmlFor="accept-terms" className="text-[10px] text-[#2C5E8D]/70 leading-relaxed cursor-pointer">
+                    Acepto los <Link to="/terminos-y-condiciones" target="_blank" className="text-[#2C5E8D] font-bold underline">Términos</Link> y la <Link to="/politica-de-privacidad" target="_blank" className="text-[#2C5E8D] font-bold underline">Privacidad</Link> de RaumLog conforme a la Ley de datos de Colombia.
+                  </label>
+                </div>
               </>
             )}
 
@@ -201,7 +207,7 @@ export default function AuthPage() {
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3 animate-shake">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-red-700 font-medium leading-relaxed">
-                   {error || storeError}
+                  {error || storeError}
                 </p>
               </div>
             )}

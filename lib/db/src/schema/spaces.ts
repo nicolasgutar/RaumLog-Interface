@@ -22,6 +22,7 @@ export const spacesTable = pgTable("spaces", {
   priceDailyNum: integer("price_daily_num").notNull().default(0),
   priceMonthlyNum: integer("price_monthly_num").notNull().default(0),
   published: boolean("published").notNull().default(false),
+  isVisible: boolean("is_visible").notNull().default(true),
   status: spaceStatusEnum("status").notNull().default("pending"),
   category: spaceCategoryEnum("category").notNull().default("General"),
   accessType: spaceAccessTypeEnum("access_type").notNull().default("24/7"),

@@ -17,7 +17,7 @@ export class KycController {
       }
 
       const fileName = `${uid}/${type}-${Date.now()}-${file.originalname}`;
-      const storagePath = await gcsService.uploadFile(file.buffer, fileName, true);
+      const storagePath = await gcsService.uploadBuffer(file.buffer, fileName, file.mimetype, 'kyc');
 
       // In a real scenario, we might want a separate kyc_documents table
       // For now, update user status to pending verification

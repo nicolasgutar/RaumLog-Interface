@@ -1,4 +1,4 @@
-import { db, spacesTable, Space } from "@workspace/db";
+import { db, spacesTable, usersTable, Space } from "@workspace/db";
 import { and, eq, count, SQL, ilike, gte, lte, or } from "drizzle-orm";
 import { SpaceRepository, FindAllPublishedOptions } from "../../domain/repositories/SpaceRepository";
 
@@ -21,7 +21,8 @@ export class DrizzleSpaceRepository implements SpaceRepository {
       where.push(eq(spacesTable.ownerId, ownerId));
     } else {
       where.push(eq(spacesTable.published, true));
-      where.push(eq(spacesTable.status, "approved"));
+      where.push(eq(spacesTable.isVisible, true));
+      // where.push(eq(spacesTable.status, "approved")); // Commented out for now to allow discovery
     }
 
     if (category) {
@@ -75,14 +76,82 @@ export class DrizzleSpaceRepository implements SpaceRepository {
     };
   }
 
+  async findAllAdmin(options: {
+    limit?: number;
+    offset?: number;
+    ownerId?: string;
+  }) {
+    const { limit = 20, offset = 0, ownerId } = options;
+    const where: (SQL | undefined)[] = [];
+
+    if (ownerId) {
+      where.push(eq(spacesTable.ownerId, ownerId));
+    }
+
+    const filters = where.length > 0 ? and(...where.filter(Boolean)) : undefined;
+
+    const query = db.select({
+        id: spacesTable.id,
+        ownerId: spacesTable.ownerId,
+        spaceType: spacesTable.spaceType,
+        city: spacesTable.city,
+        address: spacesTable.address,
+        description: spacesTable.description,
+        priceMonthly: spacesTable.priceMonthly,
+        priceMonthlyNum: spacesTable.priceMonthlyNum,
+        isVisible: spacesTable.isVisible,
+        published: spacesTable.published,
+        createdAt: spacesTable.createdAt,
+        ownerName: usersTable.name,
+        ownerEmail: usersTable.email
+      })
+      .from(spacesTable)
+      .leftJoin(usersTable, eq(spacesTable.ownerId, usersTable.uid));
+    
+    if (filters) query.where(filters);
+    
+    const data = await query.limit(limit).offset(offset);
+
+    const [{ value }] = await db.select({ value: count() })
+      .from(spacesTable)
+      .where(filters);
+
+    const totalCount = Number(value);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      data,
+      meta: {
+        totalCount,
+        totalPages,
+      },
+    };
+  }
+
   async create(data: any): Promise<Space> {
     const [result] = await db.insert(spacesTable).values({
       ...data,
-      published: false, // Force draft state on creation
+      published: false,
       status: "pending",
       createdAt: new Date(),
       updatedAt: new Date(),
     }).returning();
     return result as Space;
+  }
+
+  async findByOwner(ownerId: string): Promise<Space[]> {
+    return db.select().from(spacesTable).where(eq(spacesTable.ownerId, ownerId)) as Promise<Space[]>;
+  }
+
+  async update(id: number, ownerId: string, data: Partial<any>): Promise<Space | null> {
+    const [result] = await db.update(spacesTable)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(spacesTable.id, id), eq(spacesTable.ownerId, ownerId)))
+      .returning();
+    return result as Space | null;
+  }
+
+  async delete(id: number, ownerId: string): Promise<void> {
+    await db.delete(spacesTable).where(and(eq(spacesTable.id, id), eq(spacesTable.ownerId, ownerId)));
   }
 }

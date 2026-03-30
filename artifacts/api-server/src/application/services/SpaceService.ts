@@ -7,8 +7,19 @@ export class SpaceService {
     return this.spaceRepository.findAllPublished(options);
   }
 
+  async getSpacesByOwner(ownerId: string) {
+    return (this.spaceRepository as any).findByOwner(ownerId);
+  }
+
   async createSpace(data: any, ownerId: string) {
-    // In a real scenario, we'd use a CreateSpaceDTO
     return (this.spaceRepository as any).create({ ...data, ownerId });
+  }
+
+  async updateSpace(id: number, ownerId: string, data: any) {
+    return (this.spaceRepository as any).update(id, ownerId, data);
+  }
+
+  async deleteSpace(id: number, ownerId: string) {
+    return (this.spaceRepository as any).delete(id, ownerId);
   }
 }

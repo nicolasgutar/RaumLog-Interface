@@ -1,6 +1,6 @@
 ﻿# RaumLog Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-27
+Auto-generated from all feature plans. Last updated: 2026-03-29
 
 ## Active Technologies
 - TypeScript / Node.js v22.17.1 / React / Vite. + Express (API), Drizzle ORM (DB), Zod (Validation), React/TailwindCSS (UI). (002-find-space-api)
@@ -30,7 +30,6 @@ TypeScript 5.9 / Node 20 (LTS): Follow standard conventions
 - 003-auth-onboarding-flow: Added TypeScript / Node.js 20+ / React 18+ + Firebase SDK (Frontend), Firebase Admin SDK (Backend), Google Cloud Storage (@google-cloud/storage), Drizzle ORM, Zod.
 - 002-find-space-api: Added TypeScript / Node.js v22.17.1 / React / Vite. + Express (API), Drizzle ORM (DB), Zod (Validation), React/TailwindCSS (UI).
 
-- 001-project-diagnosis: Added TypeScript 5.9 / Node 20 (LTS) + Express 5, React 18, Expo 52, Drizzle ORM, Zod
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

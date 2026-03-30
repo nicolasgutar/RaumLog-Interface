@@ -41,4 +41,21 @@ export class UserController {
       return res.status(500).json({ error: err.message });
     }
   }
+
+  async becomeHost(req: Request, res: Response) {
+    try {
+      const { uid } = (req as any).user;
+      const [updatedUser] = await db.update(usersTable)
+        .set({ 
+          role: 'Anfitrión',
+          updatedAt: new Date() 
+        })
+        .where(eq(usersTable.uid, uid))
+        .returning();
+
+      return res.status(200).json({ user: updatedUser });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
 }

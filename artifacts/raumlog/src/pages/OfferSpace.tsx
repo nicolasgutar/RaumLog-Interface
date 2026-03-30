@@ -1,9 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Camera, DollarSign, Shield, Star, CheckCircle, Upload, FileText, X, Calculator } from "lucide-react";
+import { Camera, DollarSign, Shield, Star, CheckCircle, Upload, FileText, X, Calculator, ArrowRight } from "lucide-react";
 import { submitSpace, submitKyc } from "@/lib/api";
 import { CommissionEngine } from "@/lib/payment-service";
+import { useAuthStore } from "@/store/authStore";
+
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
 const benefits = [
   {
@@ -40,6 +44,8 @@ function fileToBase64(file: File): Promise<string> {
 type Step = "space" | "kyc" | "success";
 
 export default function OfferSpace() {
+  const navigate = useNavigate();
+  const { user, idToken, setAuth } = useAuthStore();
   const [step, setStep] = useState<Step>("space");
 
   const [spaceForm, setSpaceForm] = useState({
@@ -78,15 +84,47 @@ export default function OfferSpace() {
 
   async function handleSpaceSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setSpaceLoading(true);
-    try {
-      await submitSpace(spaceForm);
-      setStep("kyc");
-    } catch {
-      setError("Hubo un error al enviar tu solicitud. Por favor intenta de nuevo.");
-    } finally {
-      setSpaceLoading(false);
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    if (user.role === "Cliente") {
+      setSpaceLoading(true);
+      setError("");
+      try {
+        const res = await fetch(`${API}/api/user/become-host`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
+        if (!res.ok) throw new Error("Error al cambiar de rol");
+        const { user: updatedUser } = await res.json();
+        setAuth(updatedUser, idToken!);
+        navigate("/perfil");
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setSpaceLoading(false);
+      }
+      return;
+    }
+
+    if (user.role === "Anfitrión") {
+      navigate("/perfil");
+      return;
+    }
+  }
+
+  // Determine button text and action
+  let buttonText = "Continuar → Creación de cuenta";
+  if (user) {
+    if (user.role === "Cliente") {
+      buttonText = "Continuar → Convertirme en anfitrión";
+    } else {
+      buttonText = "Continuar → Ir al perfil";
     }
   }
 
@@ -183,7 +221,7 @@ export default function OfferSpace() {
                 </p>
                 <p className="text-sm text-[#2C5E8D]/50">
                   Puedes ver el estado de tu espacio en el{" "}
-                  <a href="/dashboard/host" className="text-[#2C5E8D] underline font-medium">Panel del Anfitrión</a>.
+                  <a href="/perfil" className="text-[#2C5E8D] underline font-medium">Panel del Anfitrión</a>.
                 </p>
                 <button
                   onClick={() => { setStep("space"); setSpaceForm({ ownerName: "", ownerEmail: "", ownerPhone: "", spaceType: "Garaje", city: "", address: "", description: "", priceMonthly: "", priceDaily: "", priceAnnual: "" }); }}
@@ -452,8 +490,9 @@ export default function OfferSpace() {
                   {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
                   <button type="submit" disabled={spaceLoading}
-                    className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors tracking-wide">
-                    {spaceLoading ? "Enviando..." : "Continuar → Verificación de identidad"}
+                    className="w-full py-4 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-60 text-white font-bold rounded-xl shadow-lg hover:shadow-[#2C5E8D]/20 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    {spaceLoading ? "Cargando..." : buttonText}
+                    {!spaceLoading && <ArrowRight className="w-5 h-5" />}
                   </button>
                 </form>
               </>
@@ -465,3 +504,4 @@ export default function OfferSpace() {
     </div>
   );
 }
+
