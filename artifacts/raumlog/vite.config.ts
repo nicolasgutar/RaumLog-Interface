@@ -6,13 +6,13 @@ import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 const rawPort = process.env.PORT;
 
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
+if (!rawPort && process.env.NODE_ENV === "production") {
+  console.warn("PORT environment variable not provided, using default 5000 for build.");
+} else if (!rawPort) {
+  throw new Error("PORT environment variable is required but was not provided.");
 }
 
-const port = Number(rawPort);
+const port = Number(rawPort || "5000");
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
@@ -20,14 +20,17 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH;
 
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
+if (!basePath && process.env.NODE_ENV === "production") {
+  console.warn("BASE_PATH environment variable not provided, using default '/' for build.");
+} else if (!basePath) {
+  throw new Error("BASE_PATH environment variable is required but was not provided.");
 }
 
+const finalBasePath = basePath || "/";
+
 export default defineConfig({
-  base: basePath,
+  envDir: '../../',
+  base: finalBasePath,
   plugins: [
     react(),
     tailwindcss(),
@@ -62,6 +65,12 @@ export default defineConfig({
     port,
     host: "0.0.0.0",
     allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+      },
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],
