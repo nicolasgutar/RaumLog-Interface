@@ -504,7 +504,7 @@ export default function FindSpace() {
           {showFilters && (
             <div className="mb-12">
               <FilterSidebar
-                query={query}
+                query={query as any}
                 updateQuery={updateQuery}
                 totalResults={data?.meta?.totalCount || 0}
               />

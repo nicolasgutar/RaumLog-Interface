@@ -59,11 +59,19 @@ if (serviceAccountStr) {
 }
 
 // Global initialization
-if (getApps().length === 0 && serviceAccount) {
-  initializeApp({
-    credential: cert(serviceAccount),
-    storageBucket: process.env.GCS_BUCKET_NAME || 'raumlog-spaces-public'
-  });
+if (getApps().length === 0) {
+  if (serviceAccount) {
+    initializeApp({
+      credential: cert(serviceAccount),
+      storageBucket: process.env.GCS_BUCKET_NAME || 'raumlog-spaces-public'
+    });
+  } else {
+    // Rely on Google Application Default Credentials (Cloud Run)
+    initializeApp({
+      projectId: process.env.GCP_PROJECT_ID || 'raumlog-e5b0f',
+      storageBucket: process.env.GCS_BUCKET_NAME || 'raumlog-spaces-public'
+    });
+  }
 }
 
 // Exported instances

@@ -23,7 +23,7 @@ router.post('/kyc/save-paths', firebaseAuthMiddleware, async (req, res) => {
     const { cedula, soporte } = req.body;
 
     const user = await db.query.usersTable.findFirst({
-      where: eq(usersTable.uid, uid)
+      where: eq(usersTable.uid, uid) as any
     });
 
     if (!user) {
@@ -32,7 +32,7 @@ router.post('/kyc/save-paths', firebaseAuthMiddleware, async (req, res) => {
 
     // Upsert submission
     const existing = await db.query.kycSubmissionsTable.findFirst({
-        where: eq(kycSubmissionsTable.hostEmail, user.email)
+        where: eq(kycSubmissionsTable.hostEmail, user.email) as any
     });
 
     if (existing) {
@@ -42,7 +42,7 @@ router.post('/kyc/save-paths', firebaseAuthMiddleware, async (req, res) => {
                 rutData: soporte || existing.rutData,
                 updatedAt: new Date() 
             })
-            .where(eq(kycSubmissionsTable.id, existing.id));
+            .where(eq(kycSubmissionsTable.id, existing.id) as any);
     } else {
         await db.insert(kycSubmissionsTable).values({
             hostEmail: user.email,
@@ -57,7 +57,7 @@ router.post('/kyc/save-paths', firebaseAuthMiddleware, async (req, res) => {
     // Mark user onboarding complete for second step
     await db.update(usersTable)
       .set({ isOnboardingComplete: true, updatedAt: new Date() })
-      .where(eq(usersTable.uid, uid));
+      .where(eq(usersTable.uid, uid) as any);
 
     return res.json({ success: true, cedula, soporte });
   } catch (err: any) {

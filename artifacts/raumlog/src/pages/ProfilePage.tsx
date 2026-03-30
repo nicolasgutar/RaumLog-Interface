@@ -10,7 +10,7 @@ import Footer from "@/components/Footer";
 import { useAuthStore } from "@/store/authStore";
 import { useSignedUpload, fetchSignedUrls, UploadedFile } from "@/hooks/useSignedUpload";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
 const CATEGORIES = ["General", "Muebles", "Cajas", "Vehículos", "Electrodomésticos"] as const;
 const ACCESS_TYPES = ["24/7", "Con cita", "Solo entrega"] as const;
 const MAX_IMAGES = 10;

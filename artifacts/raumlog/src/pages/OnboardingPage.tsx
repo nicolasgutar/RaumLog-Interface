@@ -1,11 +1,11 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { CheckCircle, Upload, Phone, User as UserIcon, LogOut, Warehouse, Package, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { useSignedUpload, UploadedFile } from "@/hooks/useSignedUpload";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
 
 const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
 
@@ -92,7 +92,7 @@ export default function OnboardingPage() {
   const [existingDocs, setExistingDocs] = useState<{cedula?: string, soporte?: string} | null>(null);
 
   // Fetch existing docs on mount for step 2
-  useState(() => {
+  useEffect(() => {
     if (idToken && step === 2) {
         fetch(`${API}/api/admin/users/${user?.uid}`, {
             headers: { Authorization: `Bearer ${idToken}` }
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
         })
         .catch(console.error);
     }
-  });
+  }, [idToken, step, user?.uid]);
 
   // ─── Step 1 ───────────────────────────────────────────────────────────────
   const handleStep1 = async (e: React.FormEvent) => {
@@ -298,7 +298,7 @@ export default function OnboardingPage() {
 
               <div className="grid sm:grid-cols-2 gap-4 mb-6">
                 <FileUploadZone
-                  label={existingDocs?.cedula ? "Subir Cédula de nuevo" : "Documento de Identidad (Cédula)"}
+                  label={existingDocs?.cedula ? "Cédula ya subida" : "Documento de Identidad (Cédula)"}
                   docType="CEDULA"
                   file={cedula}
                   onFile={(f) => handleDocUpload(f, "CEDULA")}
@@ -306,7 +306,7 @@ export default function OnboardingPage() {
                   progress={progressCedula}
                 />
                 <FileUploadZone
-                  label={existingDocs?.soporte ? "Subir RUT de nuevo" : "Soporte de Residencia o RUT"}
+                  label={existingDocs?.soporte ? "RUT ya subido" : "Soporte de Residencia o RUT"}
                   docType="SOPORTE"
                   file={soporte}
                   onFile={(f) => handleDocUpload(f, "SOPORTE")}

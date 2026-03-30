@@ -1,0 +1,64 @@
+# Based on .gitignore but allows .env.production for Vite build-time vars
+.gcloudignore
+.git
+.gitignore
+
+# compiled output
+dist
+tmp
+out-tsc
+*.tsbuildinfo
+.expo
+.expo-shared
+
+# dependencies
+node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Replit
+.cache/
+.local/
+
+# Logs
+*.log
+
+# Local env only (NOT .env.production — needed for Vite build)
+.env
+.env.local
+.env.*.local
+
+# Service account key files (use Secret Manager instead)
+raumlog-*.json
+
+# Misc large/unnecessary files
+cloud-sql-proxy.exe
+cloud_run_logs.txt
+gcloud_build_log_2.txt
+gcloud_error.txt
+gcloud_raumlog_error.txt
+raumlog_final.txt
+raumlog_typecheck.txt
+typecheck_out.txt
+.specify/memory/

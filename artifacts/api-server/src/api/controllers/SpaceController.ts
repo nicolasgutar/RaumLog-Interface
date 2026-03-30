@@ -41,7 +41,7 @@ export class SpaceController {
   async updateSpace(req: Request, res: Response) {
     try {
       const { uid } = (req as any).user;
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.id as string, 10);
       const result = await this.spaceService.updateSpace(id, uid, req.body);
       if (!result) return res.status(404).json({ error: "Space not found or unauthorized" });
       return res.json(result);
@@ -53,7 +53,7 @@ export class SpaceController {
   async deleteSpace(req: Request, res: Response) {
     try {
       const { uid } = (req as any).user;
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.id as string, 10);
       await this.spaceService.deleteSpace(id, uid);
       return res.status(204).send();
     } catch (error) {

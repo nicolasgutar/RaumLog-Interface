@@ -7,7 +7,7 @@ export class UserController {
     try {
       const { uid } = (req as any).user;
       const user = await db.query.usersTable.findFirst({
-        where: eq(usersTable.uid, uid)
+        where: eq(usersTable.uid, uid) as any
       });
       if (!user) return res.status(404).json({ error: 'User not found' });
       return res.status(200).json({ user });
@@ -33,7 +33,7 @@ export class UserController {
           isOnboardingComplete: true, // Complete after first step as requested
           updatedAt: new Date() 
         })
-        .where(eq(usersTable.uid, uid))
+        .where(eq(usersTable.uid, uid) as any)
         .returning();
 
       return res.status(200).json({ user: updatedUser, nextStep: 'completed' });
@@ -50,7 +50,7 @@ export class UserController {
           role: 'Anfitrión',
           updatedAt: new Date() 
         })
-        .where(eq(usersTable.uid, uid))
+        .where(eq(usersTable.uid, uid) as any)
         .returning();
 
       return res.status(200).json({ user: updatedUser });

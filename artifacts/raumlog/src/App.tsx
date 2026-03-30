@@ -5,7 +5,6 @@ import FindSpace from "@/pages/FindSpace";
 import OfferSpace from "@/pages/OfferSpace";
 import Contact from "@/pages/Contact";
 import AuthPage from "@/pages/AuthPage";
-import AdminLogin from "@/pages/AdminLogin";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Soporte from "@/pages/Soporte";

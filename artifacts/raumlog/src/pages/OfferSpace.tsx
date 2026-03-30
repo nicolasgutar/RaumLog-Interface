@@ -7,7 +7,7 @@ import { submitSpace, submitKyc } from "@/lib/api";
 import { CommissionEngine } from "@/lib/payment-service";
 import { useAuthStore } from "@/store/authStore";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
 
 const benefits = [
   {

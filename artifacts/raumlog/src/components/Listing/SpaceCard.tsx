@@ -38,7 +38,7 @@ export function SpaceCard({ space, onClick }: SpaceCardProps) {
         <div className="flex justify-between items-start mb-2 gap-2">
           <h3 className="font-bold text-[#2C5E8D] text-lg leading-tight uppercase tracking-tight">{space.spaceType}</h3>
           <div className="text-right flex-shrink-0">
-            <p className="text-[#2C5E8D] font-bold text-lg">{formatCOP(Number(space.priceMonthlyNum) || 0)}</p>
+            <p className="text-[#2C5E8D] font-bold text-lg">{formatCOP(Number(space.priceMonthly) || 0)}</p>
             <p className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">/ mes</p>
           </div>
         </div>
@@ -54,7 +54,7 @@ export function SpaceCard({ space, onClick }: SpaceCardProps) {
         
         <div className="mt-auto pt-4 border-t border-[#AECBE9]/20 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[#2C5E8D]/40">
            <span>{space.accessType}</span>
-           <span>{space.size}</span>
+           <span>{space.category}</span>
         </div>
       </div>
     </div>

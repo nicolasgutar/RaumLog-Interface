@@ -6,11 +6,13 @@ const saPath = process.env.GCS_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_A
 let keyFilename: string | undefined;
 
 if (saPath) {
-  // If it's not an absolute path, try to resolve it from the root of the project
-  // which is usually 2 levels up from artifacts/api-server
-  keyFilename = path.isAbsolute(saPath) 
+  const resolvedPath = path.isAbsolute(saPath) 
     ? saPath 
     : path.resolve(process.cwd(), '..', '..', saPath);
+  
+  if (require('fs').existsSync(resolvedPath)) {
+    keyFilename = resolvedPath;
+  }
 }
 
 const storage = new Storage({ keyFilename });

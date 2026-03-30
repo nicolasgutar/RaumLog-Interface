@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/store/authStore";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
 
 export interface UploadedFile {
   filePath: string;  // GCS path stored in DB
