@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, reservationsTable, insertReservationSchema } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import { firebaseAuthMiddleware } from "../infrastructure/auth/FirebaseMiddleware";
 
 const router = Router();
 
@@ -30,7 +31,7 @@ function logStateChange(id: number, status: ReservationStatus, ctx?: { guestEmai
   console.log(`  📧 Email simulado enviado a todas las partes\n`);
 }
 
-router.post("/reservations", async (req, res) => {
+router.post("/reservations", firebaseAuthMiddleware, async (req, res) => {
   const parsed = insertReservationSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: "Datos inválidos", details: parsed.error.issues });
@@ -44,7 +45,7 @@ router.post("/reservations", async (req, res) => {
   return res.status(201).json({ reservation });
 });
 
-router.post("/reservations/:id/approve-host", async (req, res) => {
+router.post("/reservations/:id/approve-host", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
   const [reservation] = await db
     .update(reservationsTable)
@@ -60,7 +61,7 @@ router.post("/reservations/:id/approve-host", async (req, res) => {
   return res.json({ reservation });
 });
 
-router.post("/reservations/:id/pay", async (req, res) => {
+router.post("/reservations/:id/pay", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
   const wompiReference = `RL-${id}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
@@ -135,7 +136,7 @@ router.post("/reservations/:id/pay", async (req, res) => {
   });
 });
 
-router.post("/reservations/:id/checkin", async (req, res) => {
+router.post("/reservations/:id/checkin", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
   const { checkinNotes, checkinPhotos, declaredValue } = req.body as {
     checkinNotes?: string;
@@ -178,7 +179,7 @@ router.post("/reservations/:id/checkin", async (req, res) => {
   return res.json({ success: true, reservation: updated });
 });
 
-router.post("/reservations/:id/complete", async (req, res) => {
+router.post("/reservations/:id/complete", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
   const [updated] = await db
     .update(reservationsTable)
@@ -190,7 +191,7 @@ router.post("/reservations/:id/complete", async (req, res) => {
   return res.json({ reservation: updated });
 });
 
-router.get("/reservations/space/:spaceId", async (req, res) => {
+router.get("/reservations/space/:spaceId", firebaseAuthMiddleware, async (req, res) => {
   const spaceId = Number(req.params["spaceId"]);
   const reservations = await db
     .select()
@@ -200,7 +201,7 @@ router.get("/reservations/space/:spaceId", async (req, res) => {
   return res.json({ reservations });
 });
 
-router.get("/reservations/guest", async (req, res) => {
+router.get("/reservations/guest", firebaseAuthMiddleware, async (req, res) => {
   const email = req.query["email"] as string;
   if (!email) return res.status(400).json({ error: "Email requerido" });
   const reservations = await db
@@ -211,7 +212,7 @@ router.get("/reservations/guest", async (req, res) => {
   return res.json({ reservations });
 });
 
-router.get("/reservations/:id", async (req, res) => {
+router.get("/reservations/:id", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
   const [reservation] = await db
     .select()

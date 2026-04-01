@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { db, spacesTable, reservationsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { firebaseAuthMiddleware } from "../infrastructure/auth/FirebaseMiddleware";
 
 const router = Router();
 
-router.get("/host/spaces", async (req, res) => {
+// TODO: replace client-supplied ?email= with (req as any).user.email from the token
+router.get("/host/spaces", firebaseAuthMiddleware, async (req, res) => {
   const email = req.query["email"] as string;
   if (!email) return res.status(400).json({ error: "Email requerido" });
   const spaces = await db
@@ -15,7 +17,7 @@ router.get("/host/spaces", async (req, res) => {
   return res.json({ spaces });
 });
 
-router.get("/host/reservations", async (req, res) => {
+router.get("/host/reservations", firebaseAuthMiddleware, async (req, res) => {
   const email = req.query["email"] as string;
   if (!email) return res.status(400).json({ error: "Email requerido" });
   const reservations = await db
@@ -26,7 +28,7 @@ router.get("/host/reservations", async (req, res) => {
   return res.json({ reservations });
 });
 
-router.patch("/host/reservations/:id/status", async (req, res) => {
+router.patch("/host/reservations/:id/status", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
   const { status, ownerEmail } = req.body as { status?: string; ownerEmail?: string };
 

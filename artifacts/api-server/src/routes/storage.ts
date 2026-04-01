@@ -10,8 +10,8 @@ router.post('/storage/upload-url', firebaseAuthMiddleware, (req, res) =>
   storageController.getUploadUrl(req, res)
 );
 
-// Generate signed read URLs for private files — auth optional (public spaces visible without login)
-router.post('/storage/signed-urls', (req, res) =>
+// Generate signed read URLs for private files
+router.post('/storage/signed-urls', firebaseAuthMiddleware, (req, res) =>
   storageController.getSignedUrls(req, res)
 );
 
