@@ -5,10 +5,8 @@ import { firebaseAuthMiddleware } from "../infrastructure/auth/FirebaseMiddlewar
 
 const router = Router();
 
-// TODO: replace client-supplied ?email= with (req as any).user.email from the token
 router.get("/host/spaces", firebaseAuthMiddleware, async (req, res) => {
-  const email = req.query["email"] as string;
-  if (!email) return res.status(400).json({ error: "Email requerido" });
+  const email = (req as any).user.email as string;
   const spaces = await db
     .select()
     .from(spacesTable)
@@ -18,8 +16,7 @@ router.get("/host/spaces", firebaseAuthMiddleware, async (req, res) => {
 });
 
 router.get("/host/reservations", firebaseAuthMiddleware, async (req, res) => {
-  const email = req.query["email"] as string;
-  if (!email) return res.status(400).json({ error: "Email requerido" });
+  const email = (req as any).user.email as string;
   const reservations = await db
     .select()
     .from(reservationsTable)
@@ -30,19 +27,19 @@ router.get("/host/reservations", firebaseAuthMiddleware, async (req, res) => {
 
 router.patch("/host/reservations/:id/status", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
-  const { status, ownerEmail } = req.body as { status?: string; ownerEmail?: string };
+  const email = (req as any).user.email as string;
+  const { status } = req.body as { status?: string };
 
   if (!status || !["approved_by_host", "rejected", "completed"].includes(status)) {
     return res.status(400).json({ error: "Estado inválido" });
   }
-  if (!ownerEmail) return res.status(400).json({ error: "Email requerido" });
 
   const [reservation] = await db
     .select()
     .from(reservationsTable)
     .where(eq(reservationsTable.id, id));
 
-  if (!reservation || reservation.spaceOwnerEmail !== ownerEmail) {
+  if (!reservation || reservation.spaceOwnerEmail !== email) {
     return res.status(403).json({ error: "No autorizado" });
   }
 
