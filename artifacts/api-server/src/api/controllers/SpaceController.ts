@@ -14,6 +14,7 @@ export class SpaceController {
       const result = await this.spaceService.getMarketplaceSpaces(parsed.data);
       return res.json(result);
     } catch (error) {
+      console.error("[getSpaces] error:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   }

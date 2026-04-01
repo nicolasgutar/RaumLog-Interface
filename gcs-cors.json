@@ -1,8 +1,9 @@
 [
   {
-    "origin": ["http://localhost:5000", "http://localhost:5001"],
+    "origin": ["http://localhost:5000", "http://localhost:5001", "https://raumlog-production-379615565756.us-central1.run.app"],
     "method": ["GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS"],
     "responseHeader": ["Content-Type", "x-goog-resumable"],
     "maxAgeSeconds": 3600
   }
 ]
+
