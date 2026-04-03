@@ -4,8 +4,7 @@ import { CheckCircle, Upload, Phone, User as UserIcon, LogOut, Warehouse, Packag
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { useSignedUpload, UploadedFile } from "@/hooks/useSignedUpload";
-
-const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
+import { onboardingStep1, saveKycPaths, fetchAdminUserById } from "@/lib/api";
 
 const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
 
@@ -93,18 +92,12 @@ export default function OnboardingPage() {
 
   // Fetch existing docs on mount for step 2
   useEffect(() => {
-    if (idToken && step === 2) {
-        fetch(`${API}/api/admin/users/${user?.uid}`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-        })
-        .then(r => r.json())
+    if (idToken && step === 2 && user?.uid) {
+      fetchAdminUserById(idToken, user.uid)
         .then(data => {
-            if (data.user?.kyc) {
-                setExistingDocs({
-                    cedula: data.user.kyc.cedulaData,
-                    soporte: data.user.kyc.rutData
-                });
-            }
+          if (data.user?.kyc) {
+            setExistingDocs({ cedula: data.user.kyc.cedulaData, soporte: data.user.kyc.rutData });
+          }
         })
         .catch(console.error);
     }
@@ -117,18 +110,12 @@ export default function OnboardingPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/api/user/onboarding/step1`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
-        body: JSON.stringify({ 
-          fullName: form.fullName, 
-          phone: form.phone, 
-          role: form.role,
-          acceptTerms: form.acceptTerms 
-        }),
+      const { user: updated } = await onboardingStep1(idToken!, {
+        fullName: form.fullName,
+        phone: form.phone,
+        role: form.role,
+        acceptTerms: form.acceptTerms,
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Error al guardar"); }
-      const { user: updated } = await res.json();
       useAuthStore.getState().setAuth(updated, idToken!);
       setStep(2);
     } catch (err: any) {
@@ -163,19 +150,12 @@ export default function OnboardingPage() {
       setSavingStep2(true);
       setError("");
       try {
-        const res = await fetch(`${API}/api/kyc/save-paths`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
-          body: JSON.stringify({
-            cedula: cedula?.filePath ?? existingDocs?.cedula ?? null,
-            soporte: soporte?.filePath ?? existingDocs?.soporte ?? null,
-          }),
-        });
-        if (!res.ok) {
-            const d = await res.json();
-            throw new Error(d.error || "Error al guardar documentos");
-        }
-      } catch (err: any) { 
+        await saveKycPaths(
+          idToken!,
+          cedula?.filePath ?? existingDocs?.cedula ?? null,
+          soporte?.filePath ?? existingDocs?.soporte ?? null,
+        );
+      } catch (err: any) {
         setError(err.message);
         setSavingStep2(false);
         return; 

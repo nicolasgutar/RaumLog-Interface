@@ -1,5 +1,5 @@
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-export const API_URL = `${BASE}/api`;
+import { API_URL } from "@/lib/constants";
+export { API_URL };
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
@@ -93,6 +93,95 @@ export async function adminDeleteSpace(token: string, spaceId: number) {
     const data = await res.json();
     throw new Error(data.error || "Error al eliminar el espacio");
   }
+  return res.json();
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+export async function verifyToken(idToken: string) {
+  const res = await fetch(`${API_URL}/auth/verify-token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to verify token"); }
+  return res.json() as Promise<{ user: any }>;
+}
+
+export async function registerUser(idToken: string, role: string, name: string) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken, role, name }),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to finalize registration"); }
+  return res.json() as Promise<{ user: any }>;
+}
+
+// ── User ──────────────────────────────────────────────────────────────────────
+
+export async function onboardingStep1(idToken: string, data: { fullName: string; phone: string; role: string; acceptTerms: boolean }) {
+  const res = await fetch(`${API_URL}/user/onboarding/step1`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Error al guardar"); }
+  return res.json() as Promise<{ user: any }>;
+}
+
+export async function saveKycPaths(idToken: string, cedula: string | null, soporte: string | null) {
+  const res = await fetch(`${API_URL}/kyc/save-paths`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ cedula, soporte }),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Error al guardar documentos"); }
+  return res.json();
+}
+
+export async function becomeHost(idToken: string) {
+  const res = await fetch(`${API_URL}/user/become-host`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+  });
+  if (!res.ok) throw new Error("Error al cambiar de rol");
+  return res.json() as Promise<{ user: any }>;
+}
+
+// ── Host Spaces (authenticated) ───────────────────────────────────────────────
+
+export async function fetchMySpaces(idToken: string) {
+  const res = await fetch(`${API_URL}/spaces/mine`, {
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+  if (!res.ok) throw new Error("Error al cargar espacios");
+  const data = await res.json();
+  return (Array.isArray(data) ? data : data.data ?? []) as any[];
+}
+
+export async function saveSpace(idToken: string, payload: object, spaceId?: number) {
+  const res = await fetch(spaceId ? `${API_URL}/spaces/${spaceId}` : `${API_URL}/spaces`, {
+    method: spaceId ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error((e as any).error || "Error al guardar"); }
+  return res.json();
+}
+
+export async function deleteSpace(idToken: string, spaceId: number) {
+  await fetch(`${API_URL}/spaces/${spaceId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+}
+
+export async function fetchAdminUserById(token: string, userId: string) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("No se pudieron cargar los detalles del usuario");
   return res.json();
 }
 

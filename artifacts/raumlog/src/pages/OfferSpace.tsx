@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Camera, DollarSign, Shield, Star, CheckCircle, Upload, FileText, X, Calculator, ArrowRight } from "lucide-react";
-import { submitSpace, submitKyc } from "@/lib/api";
+import { Camera, DollarSign, Shield, Star, CheckCircle, Calculator, ArrowRight } from "lucide-react";
+import { submitSpace, submitKyc, becomeHost } from "@/lib/api";
 import { CommissionEngine } from "@/lib/payment-service";
 import { useAuthStore } from "@/store/authStore";
-
-const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
+import { KycUploadForm, type KycFiles } from "@/components/OfferSpace/KycUploadForm";
 
 const benefits = [
   {
@@ -43,6 +42,7 @@ function fileToBase64(file: File): Promise<string> {
 
 type Step = "space" | "kyc" | "success";
 
+
 export default function OfferSpace() {
   const navigate = useNavigate();
   const { user, idToken, setAuth } = useAuthStore();
@@ -61,10 +61,7 @@ export default function OfferSpace() {
     priceAnnual: "",
   });
 
-  const [kycForm, setKycForm] = useState({
-    cedulaFile: null as File | null,
-    rutFile: null as File | null,
-  });
+  const [kycForm, setKycForm] = useState<KycFiles>({ cedulaFile: null, rutFile: null });
 
   const [spaceLoading, setSpaceLoading] = useState(false);
   const [kycLoading, setKycLoading] = useState(false);
@@ -93,15 +90,7 @@ export default function OfferSpace() {
       setSpaceLoading(true);
       setError("");
       try {
-        const res = await fetch(`${API}/api/user/become-host`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-        });
-        if (!res.ok) throw new Error("Error al cambiar de rol");
-        const { user: updatedUser } = await res.json();
+        const { user: updatedUser } = await becomeHost(idToken!);
         setAuth(updatedUser, idToken!);
         navigate("/perfil");
       } catch (err: any) {
@@ -232,97 +221,14 @@ export default function OfferSpace() {
               </div>
 
             ) : step === "kyc" ? (
-              <div className="bg-white rounded-2xl p-8 shadow">
-                {/* Progress */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-sm text-[#2C5E8D]/60">Datos del espacio</span>
-                  </div>
-                  <div className="flex-1 h-px bg-[#AECBE9]/40" />
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-[#2C5E8D] flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-sm font-medium text-[#2C5E8D]">Verificación KYC</span>
-                  </div>
-                </div>
-
-                <h2 className="font-heading text-2xl text-[#2C5E8D] mb-2 uppercase tracking-wide">Verificación de identidad</h2>
-                <p className="text-[#2C5E8D]/60 text-sm mb-6">
-                  Para publicar tu espacio necesitamos verificar tu identidad. Sube los documentos requeridos (PDF o imagen).
-                  Quedarán en estado <strong>Pendiente de revisión</strong>.
-                </p>
-
-                <form onSubmit={handleKycSubmit} className="space-y-5">
-                  {/* Cédula */}
-                  <div>
-                    <label className="block text-sm font-medium text-[#2C5E8D] mb-2">
-                      Cédula de Ciudadanía *
-                    </label>
-                    <div className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors ${kycForm.cedulaFile ? "border-green-400 bg-green-50" : "border-[#AECBE9] hover:border-[#2C5E8D]"}`}>
-                      {kycForm.cedulaFile ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <FileText className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-green-700 font-medium">{kycForm.cedulaFile.name}</span>
-                          <button type="button" onClick={() => setKycForm((p) => ({ ...p, cedulaFile: null }))}
-                            className="text-red-400 hover:text-red-600">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className="cursor-pointer flex flex-col items-center gap-2">
-                          <Upload className="w-8 h-8 text-[#AECBE9]" />
-                          <span className="text-sm text-[#2C5E8D]/60">Haz clic para subir tu cédula</span>
-                          <span className="text-xs text-[#2C5E8D]/40">PDF, JPG, PNG — máx. 5 MB</span>
-                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="sr-only"
-                            onChange={(e) => setKycForm((p) => ({ ...p, cedulaFile: e.target.files?.[0] || null }))} />
-                        </label>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* RUT */}
-                  <div>
-                    <label className="block text-sm font-medium text-[#2C5E8D] mb-2">
-                      RUT o Recibo de Servicio Público *
-                    </label>
-                    <div className={`border-2 border-dashed rounded-xl p-5 text-center transition-colors ${kycForm.rutFile ? "border-green-400 bg-green-50" : "border-[#AECBE9] hover:border-[#2C5E8D]"}`}>
-                      {kycForm.rutFile ? (
-                        <div className="flex items-center justify-center gap-3">
-                          <FileText className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-green-700 font-medium">{kycForm.rutFile.name}</span>
-                          <button type="button" onClick={() => setKycForm((p) => ({ ...p, rutFile: null }))}
-                            className="text-red-400 hover:text-red-600">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className="cursor-pointer flex flex-col items-center gap-2">
-                          <Upload className="w-8 h-8 text-[#AECBE9]" />
-                          <span className="text-sm text-[#2C5E8D]/60">Haz clic para subir el documento</span>
-                          <span className="text-xs text-[#2C5E8D]/40">PDF, JPG, PNG — máx. 5 MB</span>
-                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="sr-only"
-                            onChange={(e) => setKycForm((p) => ({ ...p, rutFile: e.target.files?.[0] || null }))} />
-                        </label>
-                      )}
-                    </div>
-                  </div>
-
-                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-                  <button type="submit" disabled={kycLoading || !kycForm.cedulaFile || !kycForm.rutFile}
-                    className="w-full py-3 bg-[#2C5E8D] hover:bg-[#1a3d5c] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors">
-                    {kycLoading ? "Enviando documentos..." : "Enviar documentos para revisión"}
-                  </button>
-                  <button type="button" onClick={skipKyc}
-                    className="w-full py-2 text-[#2C5E8D]/50 hover:text-[#2C5E8D] text-sm transition-colors">
-                    Omitir por ahora (enviaré documentos más tarde)
-                  </button>
-                </form>
-              </div>
+              <KycUploadForm
+                files={kycForm}
+                onChange={(updates) => setKycForm((p) => ({ ...p, ...updates }))}
+                onSubmit={handleKycSubmit}
+                onSkip={skipKyc}
+                loading={kycLoading}
+                error={error}
+              />
 
             ) : (
               <>

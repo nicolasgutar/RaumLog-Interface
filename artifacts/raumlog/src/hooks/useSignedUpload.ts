@@ -1,6 +1,5 @@
 import { useAuthStore } from "@/store/authStore";
-
-const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
+import { API_URL } from "@/lib/constants";
 
 export interface UploadedFile {
   filePath: string;  // GCS path stored in DB
@@ -22,7 +21,7 @@ export function useSignedUpload() {
     onProgress?: (pct: number) => void
   ): Promise<UploadedFile> {
     // 1. Get signed upload URL from backend
-    const urlRes = await fetch(`${API}/api/storage/upload-url`, {
+    const urlRes = await fetch(`${API_URL}/storage/upload-url`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +79,7 @@ export async function fetchSignedUrls(
 ): Promise<Record<string, string>> {
   if (!paths || paths.length === 0) return {};
   try {
-    const res = await fetch(`${API}/api/storage/signed-urls`, {
+    const res = await fetch(`${API_URL}/storage/signed-urls`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ paths, bucket }),

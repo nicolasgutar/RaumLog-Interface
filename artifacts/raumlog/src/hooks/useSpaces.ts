@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchSignedUrls } from "@/hooks/useSignedUpload";
-
-const API_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5001";
+import { API_URL } from "@/lib/constants";
 
 export interface SpacesQuery {
   limit?: number;
@@ -58,7 +57,7 @@ export function useSpaces(query: SpacesQuery = {}) {
       if (query.maxPrice !== undefined) params.append("maxPrice", query.maxPrice.toString());
       if (query.search) params.append("search", query.search);
 
-      const response = await fetch(`${API_URL}/api/spaces?${params.toString()}`);
+      const response = await fetch(`${API_URL}/spaces?${params.toString()}`);
       if (!response.ok) throw new Error(`Failed to fetch spaces: ${response.statusText}`);
 
       const json = await response.json();
