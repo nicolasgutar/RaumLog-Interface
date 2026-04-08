@@ -24,6 +24,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "bash scripts/start-cloudsql-proxy.sh"
+waitForPort = 5432
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "PORT=5001 pnpm --filter @workspace/api-server dev"
 waitForPort = 5001
 
