@@ -1,140 +1,86 @@
-# RaumLog — Marketplace de Almacenamiento
+# RaumLog
 
-**RaumLog** conecta personas que necesitan espacio de almacenamiento con vecinos que tienen garajes, cuartos de herramientas o bodegas disponibles. Operamos en Medellín y Bogotá (Colombia).
+Marketplace de almacenamiento entre particulares para Colombia. Conecta a personas que necesitan espacio de almacenamiento con vecinos que tienen garajes, cuartos útiles o bodegas disponibles. Opera en Medellín, Bogotá y área metropolitana.
 
----
-
-## Tecnologías
-
-| Capa | Stack |
-|------|-------|
-| Web frontend | React 18 + Vite + Tailwind CSS v3 |
-| Mobile | Expo 52 (React Native) — iOS + Android |
-| API | Express 5 + TypeScript (Node 20) |
-| Base de datos | PostgreSQL (Replit managed) |
-| Pagos | Wompi (sandbox → producción) |
-| Autenticación | JWT + bcryptjs |
+**Producción:** https://raumlog-production-379615565756.us-central1.run.app/
 
 ---
 
-## Estructura del proyecto
+## Origen del proyecto
+
+RaumLog fue prototipado en Replit. Posteriormente fue adaptado para funcionalidad completa de producción: se migró la autenticación a Firebase, se reemplazó el almacenamiento efímero por Google Cloud Storage, se añadió un panel de administración, y se desplegó fuera de Replit en Google Cloud Run para reducir costos operativos y tener mayor control sobre la infraestructura.
+
+---
+
+## Stack
+
+| Capa | Tecnología |
+|---|---|
+| Frontend | React 18 + Vite 7 + Tailwind CSS |
+| Backend | Express 5 + TypeScript, Node 22 |
+| Monorepo | pnpm workspaces |
+| Auth | Firebase Authentication (Google + email/password) |
+| Base de datos | PostgreSQL en Cloud SQL + Drizzle ORM |
+| Almacenamiento | Google Cloud Storage (bucket público para imágenes, bucket privado para documentos KYC) |
+| Secrets | GCP Secret Manager |
+| Despliegue | Google Cloud Run (Docker, source-based deploy) |
+
+---
+
+## Estructura del monorepo
 
 ```
-workspace/
-├── artifacts/
-│   ├── raumlog/          # App web (React + Vite)
-│   ├── raumlog-mobile/   # App móvil (Expo)
-│   └── api-server/       # API REST (Express)
-├── packages/
-│   └── shared/           # Tipos y utilidades compartidas
-└── README.md
-```
-
----
-
-## Módulos principales
-
-### Web (`artifacts/raumlog/src/`)
-
-| Archivo | Descripción |
-|---------|-------------|
-| `pages/Home.tsx` | Landing page con HeroSection, estadísticas y CTA |
-| `pages/FindSpace.tsx` | Búsqueda, filtros y flujo de reserva completo |
-| `pages/OfferSpace.tsx` | Formulario de registro de espacios para anfitriones |
-| `pages/AuthPage.tsx` | Login / Registro con JWT y checkbox LOPD |
-| `pages/AdminControl.tsx` | Panel superadmin: espacios, reservas, finanzas |
-| `lib/payment-service.ts` | Motor de comisiones + integración Wompi |
-| `lib/auth-api.ts` | Funciones de login/registro/me contra la API |
-| `components/Header.tsx` | Navbar responsive con dropdown de usuario |
-| `components/WhatsAppButton.tsx` | Botón flotante de soporte WhatsApp |
-
-### Mobile (`artifacts/raumlog-mobile/app/`)
-
-| Ruta | Descripción |
-|------|-------------|
-| `(tabs)/index.tsx` | Búsqueda de espacios con geolocalización |
-| `(tabs)/reservas.tsx` | Historial de reservas del cliente |
-| `(tabs)/dashboard.tsx` | Panel del anfitrión: espacios y solicitudes |
-| `(tabs)/cuenta.tsx` | Perfil, configuración y logout |
-| `auth.tsx` | Login / Registro con validación LOPD |
-| `soporte.tsx` | Canales de contacto y soporte |
-| `context/AuthContext.tsx` | Estado de sesión con AsyncStorage |
-
-### API (`artifacts/api-server/src/`)
-
-| Ruta | Método | Descripción |
-|------|--------|-------------|
-| `/api/auth/register` | POST | Registro de usuarios (bcrypt + JWT) |
-| `/api/auth/login` | POST | Login (devuelve JWT 7 días) |
-| `/api/auth/me` | GET | Perfil del usuario autenticado |
-| `/api/spaces/public` | GET | Listado de espacios publicados |
-| `/api/spaces/public/:id` | GET | Detalle de un espacio |
-| `/api/reservations` | POST | Crear reserva |
-| `/api/reservations/:id/pay` | POST | Confirmar pago (Wompi sandbox) |
-| `/api/host/spaces` | GET | Espacios del anfitrión |
-| `/api/host/reservations/:id/status` | PATCH | Aprobar / rechazar reserva |
-| `/api/admin/login` | POST | Login de superadmin |
-| `/api/admin/spaces` | GET/PATCH | Gestión de espacios |
-
----
-
-## Motor de comisiones
-
-| Escenario | Duración | Comisión |
-|-----------|----------|----------|
-| A — Estadía corta | 1–5 meses | 20% del total |
-| B — Estadía larga | 6+ meses | 1 mes de renta fijo |
-
-IVA (19%) se aplica **sobre** el precio público y es pagado por el cliente al momento de la reserva. Se remite a la DIAN.
-
----
-
-## Variables de entorno
-
-```env
-# Compartidas API + Web
-DATABASE_URL=postgres://...
-JWT_SECRET=...
-ADMIN_PASSWORD=...
-
-# Mobile
-EXPO_PUBLIC_DOMAIN=...
+artifacts/
+  api-server/       Express REST API
+  raumlog/          Frontend web (React + Vite)
+  raumlog-mobile/   App móvil (Expo / React Native)
+lib/
+  db/               Schema Drizzle + migraciones
+  api-zod/          Schemas Zod compartidos
+  api-client-react/ Cliente React generado
+scripts/            Scripts de utilidad (seed, update-user, etc.)
+specs/              Especificaciones de producto por feature
 ```
 
 ---
 
-## Arrancar en desarrollo
+## Desarrollo local
+
+**Requisitos:** Node 22, pnpm
 
 ```bash
 # Instalar dependencias
 pnpm install
 
-# API
-pnpm --filter @workspace/api-server run dev
+# Backend (desde artifacts/api-server, tras compilar)
+pnpm --filter @workspace/api-server build
+PORT=5001 DATABASE_URL=... FIREBASE_SERVICE_ACCOUNT=... node --enable-source-maps ./dist/index.mjs
 
-# Web
-pnpm --filter @workspace/raumlog run dev
-
-# Mobile
-pnpm --filter @workspace/raumlog-mobile run dev
+# Frontend
+PORT=5000 BASE_PATH=/ pnpm --filter @workspace/raumlog dev
 ```
 
----
+El frontend corre en `:5000` y hace proxy de `/api` hacia `:5001` (configurado en `vite.config.ts`).
 
-## Pagos — Wompi
-
-El flujo de pago usa Wompi en modo **sandbox**. Para pasar a producción:
-1. Reemplazar `WOMPI_SANDBOX_INTEGRITY_KEY` por la clave real.
-2. Cambiar el endpoint en `payment-service.ts` → `https://checkout.wompi.co/p/`.
-3. Verificar el webhook de confirmación desde el panel de Wompi.
+Las variables de entorno locales van en `.env` en la raíz del monorepo (ver `.env` de ejemplo — no se sube a git).
 
 ---
 
-## Entidad legal
+## Despliegue
 
-**COALGE S.A.S.**
-NIT 901.234.567-8 · Medellín, Colombia
-info@coalge.com.co
+```bash
+gcloud run deploy raumlog-production \
+  --source . \
+  --region us-central1 \
+  --set-env-vars="NODE_ENV=production,DATABASE_URL=...,GCS_BUCKET_NAME=raumlog-spaces-public,GCP_PROJECT_ID=raumlog-e5b0f" \
+  --add-cloudsql-instances="raumlog:us-central1:raumlog-db" \
+  --service-account="raumlog-runner@raumlog.iam.gserviceaccount.com" \
+  --set-secrets="/app/secrets/firebase-sa.json=raumlog-firebase-sa:latest" \
+  --allow-unauthenticated \
+  --project=raumlog
+```
+
+El `Dockerfile` compila el frontend (con variables `VITE_*` baked-in) y el backend, y sirve ambos desde un único proceso Express en el puerto 8080.
 
 ---
 

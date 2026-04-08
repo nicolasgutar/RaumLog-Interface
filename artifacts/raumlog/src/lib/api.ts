@@ -1,5 +1,5 @@
-const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-export const API_URL = `${BASE}/api`;
+import { API_URL } from "@/lib/constants";
+export { API_URL };
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
@@ -13,63 +13,176 @@ export async function adminLogin(password: string): Promise<string> {
   return (await res.json()).token as string;
 }
 
-export async function fetchAdminSpaces(token: string) {
-  const res = await fetch(`${API_URL}/admin/spaces`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error("No autorizado");
-  return (await res.json()).spaces;
-}
+// ── Admin (v2 Protected) ─────────────────────────────────────────────────────
 
-export async function updateSpaceStatus(token: string, id: number, status: string) {
-  const res = await fetch(`${API_URL}/admin/spaces/${id}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ status }),
+export async function fetchAdminUsers(token: string, page = 1, search = '', sort = 'name', order = 'asc') {
+  const query = new URLSearchParams({
+    page: page.toString(),
+    search,
+    sort,
+    order
+  }).toString();
+  
+  const res = await fetch(`${API_URL}/admin/users?${query}`, {
+    headers: { Authorization: `Bearer ${token}` }
   });
-  if (!res.ok) throw new Error("Error al actualizar");
-}
-
-export async function publishSpace(token: string, id: number, published: boolean) {
-  const res = await fetch(`${API_URL}/admin/spaces/${id}/publish`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ published }),
-  });
-  if (!res.ok) throw new Error("Error al publicar");
-}
-
-export async function deleteSpace(token: string, id: number) {
-  const res = await fetch(`${API_URL}/admin/spaces/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Error al eliminar");
-}
-
-export async function fetchAdminFinanzas(token: string) {
-  const res = await fetch(`${API_URL}/admin/finanzas`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error("No autorizado");
+  
+  if (!res.ok) throw new Error("No se pudieron cargar los usuarios");
   return res.json();
 }
 
-export async function fetchAdminReservations(token: string) {
-  const res = await fetch(`${API_URL}/admin/reservations`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error("No autorizado");
-  return (await res.json()).reservations;
-}
-
-export async function fetchAdminKyc(token: string) {
-  const res = await fetch(`${API_URL}/admin/kyc`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error("No autorizado");
-  return (await res.json()).submissions;
-}
-
-export async function updateKycStatus(token: string, id: number, status: string, adminNotes?: string) {
-  const res = await fetch(`${API_URL}/admin/kyc/${id}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ status, adminNotes }),
+export async function fetchAdminUserDetails(token: string, userId: string) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` }
   });
-  if (!res.ok) throw new Error("Error al actualizar KYC");
+  
+  if (!res.ok) throw new Error("No se pudieron cargar los detalles del usuario");
+  return res.json();
+}
+
+export async function verifyHost(token: string, userId: string, isVerified: boolean) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}/verify`, {
+    method: "PATCH",
+    headers: { 
+      "Content-Type": "application/json", 
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify({ isVerified }),
+  });
+  
+  if (!res.ok) throw new Error("Error al actualizar verificación");
+  return res.json();
+}
+
+export async function fetchAdminSpacesV2(token: string, page = 1, limit = 10, ownerId?: string) {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString()
+  });
+  if (ownerId) params.append('ownerId', ownerId);
+  
+  const res = await fetch(`${API_URL}/admin/spaces?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  
+  if (!res.ok) throw new Error("No se pudieron cargar los espacios");
+  return res.json();
+}
+
+export async function toggleSpaceVisibility(token: string, spaceId: number, isVisible: boolean) {
+  const res = await fetch(`${API_URL}/admin/spaces/${spaceId}/visibility`, {
+    method: "PATCH",
+    headers: { 
+      "Content-Type": "application/json", 
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify({ isVisible }),
+  });
+  
+  if (!res.ok) throw new Error("Error al cambiar visibilidad");
+  return res.json();
+}
+
+export async function adminDeleteSpace(token: string, spaceId: number) {
+  const res = await fetch(`${API_URL}/admin/spaces/${spaceId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || "Error al eliminar el espacio");
+  }
+  return res.json();
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+export async function verifyToken(idToken: string) {
+  const res = await fetch(`${API_URL}/auth/verify-token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to verify token"); }
+  return res.json() as Promise<{ user: any }>;
+}
+
+export async function registerUser(idToken: string, role: string, name: string) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken, role, name }),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to finalize registration"); }
+  return res.json() as Promise<{ user: any }>;
+}
+
+// ── User ──────────────────────────────────────────────────────────────────────
+
+export async function onboardingStep1(idToken: string, data: { fullName: string; phone: string; role: string; acceptTerms: boolean }) {
+  const res = await fetch(`${API_URL}/user/onboarding/step1`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Error al guardar"); }
+  return res.json() as Promise<{ user: any }>;
+}
+
+export async function saveKycPaths(idToken: string, cedula: string | null, soporte: string | null) {
+  const res = await fetch(`${API_URL}/kyc/save-paths`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ cedula, soporte }),
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Error al guardar documentos"); }
+  return res.json();
+}
+
+export async function becomeHost(idToken: string) {
+  const res = await fetch(`${API_URL}/user/become-host`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+  });
+  if (!res.ok) throw new Error("Error al cambiar de rol");
+  return res.json() as Promise<{ user: any }>;
+}
+
+// ── Host Spaces (authenticated) ───────────────────────────────────────────────
+
+export async function fetchMySpaces(idToken: string) {
+  const res = await fetch(`${API_URL}/spaces/mine`, {
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+  if (!res.ok) throw new Error("Error al cargar espacios");
+  const data = await res.json();
+  return (Array.isArray(data) ? data : data.data ?? []) as any[];
+}
+
+export async function saveSpace(idToken: string, payload: object, spaceId?: number) {
+  const res = await fetch(spaceId ? `${API_URL}/spaces/${spaceId}` : `${API_URL}/spaces`, {
+    method: spaceId ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error((e as any).error || "Error al guardar"); }
+  return res.json();
+}
+
+export async function deleteSpace(idToken: string, spaceId: number) {
+  await fetch(`${API_URL}/spaces/${spaceId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+}
+
+export async function fetchAdminUserById(token: string, userId: string) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("No se pudieron cargar los detalles del usuario");
+  return res.json();
 }
 
 // ── Spaces ─────────────────────────────────────────────────────────────────────

@@ -1,5 +1,3 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 # compiled output
 dist
 tmp
@@ -47,3 +45,17 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Environment and Logs
+.env*
+*.log
+*.txt
+*.bak
+.specify/memory/
+
+# GCP service account keys
+raumlog-*.json
+
+# GCP tools (binaries)
+cloud-sql-proxy.exe
+cloud-sql-proxy

@@ -1,54 +1,68 @@
-import { Router } from "express";
-import { db, kycSubmissionsTable, insertKycSchema } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import jwt from "jsonwebtoken";
+import { Router } from 'express';
+import multer from 'multer';
+import { KycController } from '../api/controllers/KycController';
+import { firebaseAuthMiddleware } from '../infrastructure/auth/FirebaseMiddleware';
+import { db, usersTable, kycSubmissionsTable } from '@workspace/db';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
-const JWT_SECRET = process.env["JWT_SECRET"] || "fallback-secret";
+const kycController = new KycController();
 
-function requireAdmin(req: any, res: any, next: any) {
-  const auth = req.headers["authorization"] as string | undefined;
-  if (!auth?.startsWith("Bearer ")) return res.status(401).json({ error: "No autorizado" });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
+// Server-side multipart upload (legacy / fallback)
+router.post('/kyc/upload', firebaseAuthMiddleware, upload.single('document'), (req, res) => kycController.uploadKyc(req, res));
+
+// Store GCS paths after client-side direct upload
+router.post('/kyc/save-paths', firebaseAuthMiddleware, async (req, res) => {
   try {
-    jwt.verify(auth.slice(7), JWT_SECRET);
-    next();
-  } catch {
-    return res.status(401).json({ error: "Token inválido" });
-  }
-}
+    const { uid } = (req as any).user;
+    const { cedula, soporte } = req.body;
 
-router.post("/kyc", async (req, res) => {
-  const parsed = insertKycSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Datos inválidos", details: parsed.error.issues });
-  }
-  const [kyc] = await db.insert(kycSubmissionsTable).values(parsed.data).returning();
-  return res.status(201).json({ kyc });
-});
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.uid, uid) as any
+    });
 
-router.get("/admin/kyc", requireAdmin, async (_req, res) => {
-  const submissions = await db
-    .select()
-    .from(kycSubmissionsTable)
-    .orderBy(kycSubmissionsTable.createdAt);
-  return res.json({ submissions });
-});
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-router.patch("/admin/kyc/:id/status", requireAdmin, async (req, res) => {
-  const id = Number(req.params["id"]);
-  const { status, adminNotes } = req.body as { status?: string; adminNotes?: string };
-  if (!status || !["approved", "rejected"].includes(status)) {
-    return res.status(400).json({ error: "Estado inválido" });
+    // Upsert submission
+    const existing = await db.query.kycSubmissionsTable.findFirst({
+        where: eq(kycSubmissionsTable.hostEmail, user.email) as any
+    });
+
+    if (existing) {
+        await db.update(kycSubmissionsTable)
+            .set({ 
+                cedulaData: cedula || existing.cedulaData,
+                rutData: soporte || existing.rutData,
+                updatedAt: new Date() 
+            })
+            .where(eq(kycSubmissionsTable.id, existing.id) as any);
+    } else {
+        await db.insert(kycSubmissionsTable).values({
+            hostEmail: user.email,
+            hostName: user.name || 'Unknown',
+            hostPhone: user.phone || 'Unknown',
+            cedulaData: cedula || '',
+            rutData: soporte || '',
+            status: 'pending'
+        });
+    }
+
+    // Mark user onboarding complete for second step
+    await db.update(usersTable)
+      .set({ isOnboardingComplete: true, updatedAt: new Date() })
+      .where(eq(usersTable.uid, uid) as any);
+
+    return res.json({ success: true, cedula, soporte });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
   }
-  await db
-    .update(kycSubmissionsTable)
-    .set({
-      status: status as "approved" | "rejected",
-      adminNotes: adminNotes || "",
-      updatedAt: new Date(),
-    })
-    .where(eq(kycSubmissionsTable.id, id));
-  return res.json({ success: true });
 });
 
 export default router;
