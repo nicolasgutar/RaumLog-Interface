@@ -4,7 +4,7 @@ modules = ["nodejs-24"]
 id = "artifacts/api-server"
 
 [[artifacts]]
-id = "artifacts/mockup-sandbox"
+id = "artifacts/raumlog"
 
 [deployment]
 router = "application"
@@ -16,6 +16,20 @@ env = { "CI" = "true" }
 
 [workflows]
 runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=5001 pnpm --filter @workspace/api-server dev"
+waitForPort = 5001
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=5000 BASE_PATH='/' pnpm --filter @workspace/raumlog dev"
 
 [agent]
 stack = "PNPM_WORKSPACE"
