@@ -44,8 +44,8 @@ export default function HostSection() {
               Ponlo a generar ingresos sin complicaciones. En RaumLog conectamos
               tu espacio disponible con personas que lo necesitan, de forma
               simple, segura y completamente digital. Tú decides cuándo, a
-              quién y en qué condiciones. Sin contratos largos, sin burocracia,
-              sin riesgos.
+              quién y en qué condiciones. Sin contratos largos, sin burocracia
+              y sin riesgos.
             </p>
             <Link
               to="/ofrece-tu-espacio"

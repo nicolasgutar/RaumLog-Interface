@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} className="mb-10">
-      <h2 className="font-heading text-xl uppercase tracking-wide text-[#2C5E8D] border-b-2 border-[#AECBE9] pb-2 mb-4">
+      <h2 className="font-heading text-xl tracking-wide text-[#2C5E8D] border-b-2 border-[#AECBE9] pb-2 mb-4">
         {title}
       </h2>
       <div className="space-y-4 text-gray-700 text-sm leading-relaxed">{children}</div>
@@ -46,7 +46,7 @@ export default function TermsAndConditions() {
           Términos y Condiciones
         </h1>
         <p className="text-[#AECBE9] text-base lg:text-lg">
-          COMPAÑÍA DE ALMACENAMIENTO Y GESTIÓN S.A.S. (COALGE) · Última actualización: Febrero 2026
+          COMPAÑÍA DE ALMACENAMIENTO Y GESTIÓN S.A.S. (COALGE)
         </p>
       </section>
 
@@ -64,13 +64,13 @@ export default function TermsAndConditions() {
                 <Li><strong>COALGE S.A.S.</strong> (en adelante "COALGE"): Sociedad comercial que actúa exclusivamente como intermediario tecnológico y agente de cobro, facilitando la conexión entre oferta y demanda.</Li>
                 <Li><strong>Anfitrión:</strong> Persona natural o jurídica que publica y ofrece un Espacio para el almacenamiento de Artículos Almacenados, dispone legítimamente de ese Espacio y concede su uso temporal para almacenamiento sin configurarse un contrato de arrendamiento.</Li>
                 <Li><strong>Usuario:</strong> Persona natural o jurídica que recibe una licencia temporal en virtud de estos Términos para usar el Espacio del Anfitrión únicamente para el almacenamiento de Artículos Almacenados.</Li>
-                <Li><strong>La Plataforma o RaumLog:</strong> Plataforma en línea que conecta Anfitriones con Usuarios, incluyendo todas las aplicaciones web, móviles y demás software, servicios de atención al cliente y el sitio www.raumlog.com.</Li>
+                <Li><strong>La Plataforma o RaumLog:</strong> Marca operada por COALGE S.A.S. Plataforma en línea que conecta Anfitriones con Usuarios, incluyendo todas las aplicaciones web, móviles y demás software, servicios de atención al cliente y el sitio www.raumlog.com.</Li>
                 <Li><strong>Los Servicios:</strong> La intermediación por parte de RaumLog entre Anfitriones y Usuarios, y cualquier servicio que ofrezcamos a través de la plataforma.</Li>
                 <Li><strong>El Espacio:</strong> Área de la propiedad del Anfitrión ofrecida para almacenamiento.</Li>
                 <Li><strong>El o los Anuncio(s):</strong> Descripción que se puede buscar y que promociona el Espacio del Anfitrión tal como aparece en el Sitio o en los Servicios.</Li>
                 <Li><strong>El o los Complemento(s):</strong> Artículos y servicios adicionales identificados en un Anuncio, ofrecidos y prestados por el Anfitrión en relación con el Espacio.</Li>
                 <Li><strong>Los Artículos Almacenados:</strong> Bienes o propiedad del Usuario que se almacenan en el Espacio del Anfitrión.</Li>
-                <Li><strong>La Reserva:</strong> Transacción confirmada entre Anfitrión y Usuario mediante la cual el Usuario almacena su propiedad en el Espacio del Anfitrión.</Li>
+                <Li><strong>La Reserva:</strong> Transacción confirmada entre el Usuario y el Anfitrión mediante la cual el Usuario almacena su propiedad en el Espacio del Anfitrión.</Li>
                 <Li><strong>Miembro de RaumLog:</strong> Persona que crea una cuenta en RaumLog mediante el proceso de registro, incluyendo Anfitriones y Usuarios.</Li>
                 <Li><strong>Contenido de RaumLog:</strong> Todo el Contenido que RaumLog o COALGE ponen a disposición a través del Sitio, incluyendo contenido licenciado de terceros.</Li>
                 <Li><strong>Contenido de Miembros de RaumLog:</strong> Todo el Contenido que un Miembro publique, cargue, difunda o transmita a través del Sitio, sujeto a la Política de Tratamiento de Datos.</Li>
@@ -79,7 +79,7 @@ export default function TermsAndConditions() {
               </Ul>
             </Sub>
             <Sub title="1.2 Naturaleza del Servicio">
-              <p>Las partes declaran y aceptan expresamente que la relación entre Anfitrión y Usuario <strong>no constituye un contrato de arrendamiento</strong> de vivienda urbana ni de local comercial.</p>
+              <p>Las partes declaran y aceptan expresamente que la relación entre el Usuario y el Anfitrión <strong>no constituye un contrato de arrendamiento</strong> de vivienda urbana ni de local comercial.</p>
               <p>Se trata de un <strong>Contrato Atípico de Uso de Espacio para Almacenamiento</strong>, por lo cual el Usuario renuncia expresamente a reclamar derechos de tenencia, prima comercial, renovación automática o desahucio. El Anfitrión retiene en todo momento la posesión del inmueble, cediendo únicamente la tenencia precaria de un área delimitada para el depósito de bienes.</p>
             </Sub>
           </Section>
@@ -134,7 +134,7 @@ export default function TermsAndConditions() {
               </Ul>
             </Sub>
             <Sub title="4.2 Rechazo de Anfitriones o Usuarios">
-              <p>Los Anfitriones o Usuarios que demuestren un patrón de rechazo a Miembros de una clase protegida debilitan la fortaleza de nuestra comunidad. RaumLog puede eliminar a dichos Miembros de la plataforma.</p>
+              <p>Los Anfitriones o Usuarios que demuestren un patrón de rechazo a Miembros de una clase protegida debilitan la fortaleza de nuestra comunidad. RaumLog se reserva la facultad de eliminar Miembros de la plataforma, para velar por un buen uso de la comunidad de RaumLog.</p>
             </Sub>
           </Section>
 

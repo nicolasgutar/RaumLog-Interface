@@ -56,6 +56,7 @@ export default function OfferSpace() {
     city: "",
     address: "",
     description: "",
+    specificRules: "",
     priceMonthly: "",
     priceDaily: "",
     priceAnnual: "",
@@ -213,7 +214,7 @@ export default function OfferSpace() {
                   <a href="/perfil" className="text-[#2C5E8D] underline font-medium">Panel del Anfitrión</a>.
                 </p>
                 <button
-                  onClick={() => { setStep("space"); setSpaceForm({ ownerName: "", ownerEmail: "", ownerPhone: "", spaceType: "Garaje", city: "", address: "", description: "", priceMonthly: "", priceDaily: "", priceAnnual: "" }); }}
+                  onClick={() => { setStep("space"); setSpaceForm({ ownerName: "", ownerEmail: "", ownerPhone: "", spaceType: "Garaje", city: "", address: "", description: "", specificRules: "", priceMonthly: "", priceDaily: "", priceAnnual: "" }); }}
                   className="mt-6 px-6 py-2.5 bg-[#2C5E8D] hover:bg-[#1a3d5c] text-white font-semibold rounded-lg transition-colors"
                 >
                   Registrar otro espacio
@@ -391,6 +392,13 @@ export default function OfferSpace() {
                     <textarea name="description" value={spaceForm.description} onChange={handleSpaceChange} rows={3}
                       className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 resize-none"
                       placeholder="Cuéntanos más sobre el espacio: tamaño, acceso, condiciones..." />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#2C5E8D] mb-1">Reglas específicas del espacio <span className="text-gray-400 font-normal">(opcional)</span></label>
+                    <textarea name="specificRules" value={spaceForm.specificRules} onChange={handleSpaceChange} rows={2}
+                      className="w-full border border-[#AECBE9] rounded-lg px-4 py-2.5 text-[#2C5E8D] outline-none focus:ring-2 focus:ring-[#2C5E8D]/30 resize-none"
+                      placeholder="Ej: Ideal para cajas. No acepto bicicletas ni herramientas ruidosas." />
                   </div>
 
                   {error && <p className="text-red-500 text-sm text-center">{error}</p>}

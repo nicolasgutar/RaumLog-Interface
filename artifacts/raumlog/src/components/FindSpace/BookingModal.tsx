@@ -39,6 +39,7 @@ export function BookingModal({ space, onClose }: { space: SpaceDTO; onClose: () 
   const [itemsDesc] = useState("");
   const [declaredValue, setDeclaredValue] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedProhibited, setAcceptedProhibited] = useState(false);
   const [, setTermsError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reservationId, setReservationId] = useState<number | null>(null);
@@ -55,7 +56,7 @@ export function BookingModal({ space, onClose }: { space: SpaceDTO; onClose: () 
   const platformCut = breakdown.commission;
 
   async function handleBook() {
-    if (!acceptedTerms) { setTermsError(true); return; }
+    if (!acceptedTerms || !acceptedProhibited) { setTermsError(true); return; }
     if (!checkIn || !checkOut || days === 0 || !guestInfo.name || !guestInfo.email) return;
     setLoading(true);
     try {
@@ -209,11 +210,18 @@ export function BookingModal({ space, onClose }: { space: SpaceDTO; onClose: () 
                   <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest block mb-2">Email *</label>
                   <input type="email" placeholder="tu@email.com" value={guestInfo.email} onChange={(e) => setGuestInfo({ email: e.target.value })} className="w-full border border-[#AECBE9] rounded-xl p-3 text-sm text-[#2C5E8D] outline-none" />
                 </div>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="w-4 h-4 accent-[#2C5E8D]" />
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="w-4 h-4 mt-0.5 flex-shrink-0 accent-[#2C5E8D]" />
                   <span className="text-xs font-medium text-[#2C5E8D]/70 uppercase tracking-tighter">Acepto los términos y condiciones de RaumLog</span>
                 </label>
-                <button onClick={handleBook} disabled={loading} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Procesando..." : "Continuar con la Reserva"}</button>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={acceptedProhibited} onChange={(e) => setAcceptedProhibited(e.target.checked)} className="w-4 h-4 mt-0.5 flex-shrink-0 accent-[#2C5E8D]" />
+                  <span className="text-xs font-medium text-[#2C5E8D]/70 leading-relaxed">Acepto expresamente que no almacenaré artículos ilegales, peligrosos o inflamables según los Términos y Condiciones. Entiendo que incumplir esta regla resultará en denuncia inmediata ante las autoridades.</span>
+                </label>
+                <p className="text-[10px] text-gray-400 leading-relaxed border border-gray-100 rounded-lg p-3 bg-gray-50">
+                  <strong>Nota:</strong> Actualmente, RaumLog no provee póliza de seguro para los bienes almacenados. El cuidado físico depende de las partes involucradas.
+                </p>
+                <button onClick={handleBook} disabled={loading || !acceptedTerms || !acceptedProhibited} className="w-full py-4 bg-[#2C5E8D] disabled:opacity-50 text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Procesando..." : "Continuar con la Reserva"}</button>
               </div>
             )}
 
@@ -230,7 +238,7 @@ export function BookingModal({ space, onClose }: { space: SpaceDTO; onClose: () 
                 <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-center">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Valor total a pagar</p>
                   <p className="text-4xl font-bold text-[#2C5E8D] mb-2">{formatCOP(publicPrice)}</p>
-                  <p className="text-[10px] text-gray-400">Incluye seguros y tarifa de plataforma</p>
+                  <p className="text-[10px] text-gray-400">Incluye comisión de plataforma e IVA</p>
                 </div>
                 <button onClick={handlePay} disabled={loading} className="w-full py-4 bg-[#2C5E8D] text-white font-bold rounded-xl shadow-md uppercase tracking-widest">{loading ? "Abriendo Pasarela..." : `Pagar Ahora`}</button>
               </div>
