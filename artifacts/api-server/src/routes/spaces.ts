@@ -12,8 +12,9 @@ const spaceController = new SpaceController(spaceService);
 // Public marketplace
 router.get("/spaces", (req, res) => spaceController.getSpaces(req, res));
 
-// Authenticated host operations
+// Authenticated host operations — must be before /:id to avoid "mine" matching as a param
 router.get("/spaces/mine", firebaseAuthMiddleware, (req, res) => spaceController.getMySpaces(req, res));
+router.get("/spaces/:id", (req, res) => spaceController.getSpaceById(req, res));
 router.post("/spaces", firebaseAuthMiddleware, (req, res) => spaceController.createSpace(req, res));
 router.put("/spaces/:id", firebaseAuthMiddleware, (req, res) => spaceController.updateSpace(req, res));
 router.delete("/spaces/:id", firebaseAuthMiddleware, (req, res) => spaceController.deleteSpace(req, res));

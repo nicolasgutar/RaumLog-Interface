@@ -3,6 +3,12 @@ import { SpaceRepository, FindAllPublishedOptions } from "../../domain/repositor
 export class SpaceService {
   constructor(private spaceRepository: SpaceRepository) {}
 
+  async getSpaceById(id: number) {
+    const space = await this.spaceRepository.findById(id);
+    if (!space) throw new Error("Space not found");
+    return space;
+  }
+
   async getMarketplaceSpaces(options: FindAllPublishedOptions) {
     return this.spaceRepository.findAllPublished(options);
   }

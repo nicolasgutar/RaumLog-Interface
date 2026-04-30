@@ -12,6 +12,7 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminUsersPage from "@/pages/Admin/AdminUsersPage";
 import AdminSpacesPage from "@/pages/Admin/AdminSpacesPage";
+import SpaceDetailPage from "@/pages/SpaceDetailPage";
 import NotFound from "@/pages/not-found";
 import ScrollToTop from "@/components/ScrollToTop";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -38,6 +39,7 @@ function App() {
           <Route path="/terminos-y-condiciones" element={<TermsAndConditions />} />
           <Route path="/politica-de-privacidad" element={<PrivacyPolicy />} />
           <Route path="/soporte" element={<Soporte />} />
+          <Route path="/espacio/:spaceId" element={<SpaceDetailPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <WhatsAppButton />
