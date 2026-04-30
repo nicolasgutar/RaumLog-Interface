@@ -5,18 +5,6 @@ import { spacesQuerySchema } from "@workspace/api-zod";
 export class SpaceController {
   constructor(private spaceService: SpaceService) {}
 
-  async getSpaceById(req: Request, res: Response) {
-    try {
-      const id = parseInt(req.params.id as string, 10);
-      const space = await this.spaceService.getSpaceById(id);
-      return res.json(space);
-    } catch (error: any) {
-      if (error.message === "Space not found")
-        return res.status(404).json({ error: "Space not found" });
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  }
-
   async getSpaces(req: Request, res: Response) {
     try {
       const parsed = spacesQuerySchema.safeParse(req.query);

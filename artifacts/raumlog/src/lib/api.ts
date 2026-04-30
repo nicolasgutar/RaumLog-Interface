@@ -199,13 +199,10 @@ export async function submitSpace(data: object) {
 
 // ── Reservations ──────────────────────────────────────────────────────────────
 
-export async function createReservation(data: object, idToken?: string) {
+export async function createReservation(data: object) {
   const res = await fetch(`${API_URL}/reservations`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Error al crear reserva");
@@ -219,6 +216,15 @@ export async function approveReservationByHost(id: number) {
   });
   if (!res.ok) throw new Error("Error al aprobar reserva");
   return (await res.json()).reservation;
+}
+
+export async function payReservation(id: number) {
+  const res = await fetch(`${API_URL}/reservations/${id}/pay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) throw new Error("Error al procesar pago");
+  return res.json();
 }
 
 export async function checkinReservation(id: number, data: {
@@ -268,28 +274,6 @@ export async function submitKyc(data: object) {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Error al enviar documentos");
-  return res.json();
-}
-
-export async function fetchSpaceById(spaceId: number) {
-  const res = await fetch(`${API_URL}/spaces/${spaceId}`);
-  if (!res.ok) throw new Error("Espacio no encontrado");
-  return res.json();
-}
-
-export async function preparePayment(reservationId: number): Promise<{
-  reference: string;
-  amountInCents: number;
-  currency: string;
-  integritySignature: string;
-  publicKey: string;
-  customerData: { email: string; fullName: string; phoneNumber: string };
-}> {
-  const res = await fetch(`${API_URL}/reservations/${reservationId}/prepare-payment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error al preparar el pago");
   return res.json();
 }
 

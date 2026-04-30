@@ -12,7 +12,6 @@ export interface FindAllPublishedOptions {
 }
 
 export interface SpaceRepository {
-  findById(id: number): Promise<Space | null>;
   findAllPublished(options: FindAllPublishedOptions): Promise<{
     data: Space[];
     meta: {

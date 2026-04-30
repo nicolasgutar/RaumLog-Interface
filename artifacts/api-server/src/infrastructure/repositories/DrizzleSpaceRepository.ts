@@ -3,11 +3,6 @@ import { and, eq, count, SQL, ilike, gte, lte, or } from "drizzle-orm";
 import { SpaceRepository, FindAllPublishedOptions } from "../../domain/repositories/SpaceRepository";
 
 export class DrizzleSpaceRepository implements SpaceRepository {
-  async findById(id: number): Promise<Space | null> {
-    const [result] = await db.select().from(spacesTable).where(eq(spacesTable.id, id));
-    return (result as Space) ?? null;
-  }
-
   async findAllPublished(options: FindAllPublishedOptions) {
     const { 
       limit = 12, 

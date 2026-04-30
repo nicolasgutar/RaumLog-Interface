@@ -45,6 +45,8 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+.replit
+scripts/start-cloudsql-proxy.sh
 
 # Environment and Logs
 .env*

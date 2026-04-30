@@ -14,9 +14,7 @@ ENV VITE_FIREBASE_PROJECT_ID=raumlog-e5b0f
 ENV VITE_FIREBASE_STORAGE_BUCKET=raumlog-e5b0f.firebasestorage.app
 ENV VITE_FIREBASE_MESSAGING_SENDER_ID=315182199687
 ENV VITE_FIREBASE_APP_ID=1:315182199687:web:315223422d3c94a0fd5922
-# API Base URL - If left empty, the app will use relative paths (recommended for monolithic deployment)
-ARG VITE_API_BASE_URL=""
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=https://raumlog-production-379615565756.us-central1.run.app
 
 # Install all dependencies required for the build
 RUN pnpm install --frozen-lockfile

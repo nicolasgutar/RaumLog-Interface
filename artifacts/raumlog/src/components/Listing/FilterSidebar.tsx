@@ -9,6 +9,11 @@ interface FilterSidebarProps {
 
 const ALL_CATEGORIES = ["General", "Muebles", "Cajas", "Vehículos", "Electrodomésticos"];
 const ALL_ACCESS = ["24/7", "Con cita", "Solo entrega"];
+const ACCESS_LABELS: Record<string, string> = {
+  "24/7": "Acceso 24/7",
+  "Con cita": "Acceso con citas programadas",
+  "Solo entrega": "Solo entrega",
+};
 
 export function FilterSidebar({ query, updateQuery, totalResults }: FilterSidebarProps) {
   const activeCount = 
@@ -59,13 +64,14 @@ export function FilterSidebar({ query, updateQuery, totalResults }: FilterSideba
            <div className="flex flex-wrap gap-2">
             {["Todos", ...ALL_ACCESS].map(a => {
                const isSelected = (a === "Todos" && !query.accessType) || (query.accessType === a);
+               const label = a === "Todos" ? "Todos" : (ACCESS_LABELS[a] || a);
                return (
                 <button 
                   key={a} 
                   onClick={() => updateQuery({ accessType: a === "Todos" ? undefined : a as any })}
                   className={`px-4 py-2 rounded text-[10px] font-bold transition-all border ${isSelected ? "bg-[#2C5E8D] text-white border-[#2C5E8D]" : "bg-white text-gray-500 border-gray-100 hover:bg-gray-50 uppercase"}`}
                 >
-                  {a}
+                  {label}
                 </button>
               );
             })}

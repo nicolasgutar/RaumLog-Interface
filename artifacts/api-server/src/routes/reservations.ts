@@ -61,8 +61,9 @@ router.post("/reservations/:id/approve-host", firebaseAuthMiddleware, async (req
   return res.json({ reservation });
 });
 
-router.post("/reservations/:id/prepare-payment", async (req, res) => {
+router.post("/reservations/:id/pay", firebaseAuthMiddleware, async (req, res) => {
   const id = Number(req.params["id"]);
+  const wompiReference = `RL-${id}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
   const [reservation] = await db
     .select()
@@ -70,41 +71,67 @@ router.post("/reservations/:id/prepare-payment", async (req, res) => {
     .where(eq(reservationsTable.id, id));
 
   if (!reservation) return res.status(404).json({ error: "Reserva no encontrada" });
+  if (!["approved_by_host", "pending_approval"].includes(reservation.status)) {
+    return res.status(400).json({ error: "La reserva no está en estado válido para pagar" });
+  }
 
-  const integrityKey = process.env["WOMPI_INTEGRITY_KEY"];
-  if (!integrityKey) return res.status(500).json({ error: "Pasarela de pago no configurada" });
+  const totalPrice = Number(reservation.totalPrice);
+  const months = reservation.months ?? 0;
 
-  const reference = `RL-${id}-${Date.now()}`;
-  const amountInCents = Math.round(Number(reservation.totalPrice ?? "0") * 100);
-  const currency = "COP";
+  // Use frontend-computed commission if available; otherwise fall back to dynamic rule:
+  // Scenario A (< 6 months): 20% · Scenario B (>= 6 months): 1 month flat
+  let platformCommission = Number(reservation.platformCommission);
+  let hostNetPrice = Number(reservation.hostNetPrice);
 
-  const integritySignature = crypto
-    .createHash("sha256")
-    .update(`${reference}${amountInCents}${currency}${integrityKey}`)
-    .digest("hex");
+  if (!platformCommission || platformCommission === 0) {
+    // totalPrice includes IVA (base * 1.19); recover base price first
+    const basePrice = Math.round(totalPrice / 1.19);
+    if (months >= 6) {
+      // Scenario B: 1 month flat commission
+      const monthlyBase = Math.round(basePrice / months);
+      platformCommission = monthlyBase;
+    } else {
+      // Scenario A: 20% of base price
+      platformCommission = Math.round(basePrice * 0.2);
+    }
+    hostNetPrice = Math.round(totalPrice / 1.19) - platformCommission;
+  }
 
-  // Auto-approve: owner already agreed off-platform by sharing the link
-  await db
+  const [updated] = await db
     .update(reservationsTable)
-    .set({ status: "approved_by_host", wompiReference: reference, updatedAt: new Date() })
-    .where(eq(reservationsTable.id, id));
+    .set({
+      status: "paid",
+      wompiReference,
+      platformCommission: String(platformCommission),
+      hostNetPrice: String(hostNetPrice),
+      updatedAt: new Date(),
+    })
+    .where(eq(reservationsTable.id, id))
+    .returning();
 
-  logStateChange(id, "approved_by_host", {
-    guestName: reservation.guestName,
-    guestEmail: reservation.guestEmail,
-    spaceTitle: reservation.spaceTitle,
+  logStateChange(id, "paid", {
+    guestName: updated.guestName,
+    guestEmail: updated.guestEmail,
+    spaceTitle: updated.spaceTitle,
   });
 
+  console.log(`\n💳 [RaumLog Pago] Referencia: ${wompiReference}`);
+  console.log(`  Total: $${totalPrice.toLocaleString("es-CO")} COP`);
+  console.log(`  Comisión RaumLog (20%): $${platformCommission.toLocaleString("es-CO")} COP`);
+  console.log(`  Neto al anfitrión (80%): $${hostNetPrice.toLocaleString("es-CO")} COP\n`);
+
   return res.json({
-    reference,
-    amountInCents,
-    currency,
-    integritySignature,
-    publicKey: process.env["WOMPI_PUBLIC_KEY"],
-    customerData: {
-      email: reservation.guestEmail,
-      fullName: reservation.guestName,
-      phoneNumber: reservation.guestPhone ?? "",
+    success: true,
+    reservation: updated,
+    wompiResponse: {
+      sandbox: true,
+      reference: wompiReference,
+      status: "APPROVED",
+      amount_in_cents: totalPrice * 100,
+      currency: "COP",
+      statusMessage: "Pago aprobado (modo sandbox)",
+      commission: platformCommission,
+      hostNet: hostNetPrice,
     },
   });
 });

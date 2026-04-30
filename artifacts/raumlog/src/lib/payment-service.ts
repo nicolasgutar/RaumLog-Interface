@@ -1,14 +1,39 @@
 /**
  * @file payment-service.ts
- * @module RaumLog/CommissionEngine
+ * @module RaumLog/PaymentService
  *
- * Motor de comisiones para RaumLog.
+ * Motor de comisiones y servicio de pagos Wompi para RaumLog.
  *
  * ## Modelos de comisión
  * - **Escenario A** (1–5 meses): 20% del total público.
  * - **Escenario B** (6+ meses): 1 mes de renta fijo como comisión.
  * - **IVA**: 19% sobre el precio público, siempre a cargo del cliente.
+ *
+ * ## Flujo de pago (sandbox)
+ * 1. `CommissionEngine.getBookingBreakdown()` calcula totales.
+ * 2. `PaymentService.prepare()` genera la referencia y firma para Wompi.
+ * 3. `PaymentService.simulateSandboxPayment()` aprueba el pago en sandbox.
+ *
+ * En producción, reemplazar `WOMPI_SANDBOX_INTEGRITY_KEY` por la clave
+ * real del panel de Wompi y verificar el webhook de confirmación.
+ *
+ * @see https://docs.wompi.co
  */
+import { generateWompiSignature } from "./api";
+
+export interface WompiPayload {
+  amount_in_cents: number;
+  currency: "COP";
+  reference: string;
+  integrity_signature: string;
+  customer_data?: {
+    email: string;
+    full_name: string;
+    phone_number: string;
+  };
+}
+
+const WOMPI_SANDBOX_INTEGRITY_KEY = "sandbox_wompi_integrity_key_2024";
 
 /** Threshold in months above which the long-stay flat model applies */
 const LONG_STAY_MONTHS = 6;
@@ -176,3 +201,48 @@ export const CommissionEngine = {
   },
 };
 
+export class PaymentService {
+  static generateReference(reservationId: number): string {
+    return `RL-${reservationId}-${Date.now()}`;
+  }
+
+  static async prepare(
+    reservationId: number,
+    amountCOP: number,
+    customerEmail: string,
+    customerName: string,
+    customerPhone: string
+  ): Promise<WompiPayload> {
+    const reference = PaymentService.generateReference(reservationId);
+    const amountInCents = Math.round(amountCOP * 100);
+    const integrity_signature = await generateWompiSignature(
+      reference,
+      amountInCents,
+      "COP",
+      WOMPI_SANDBOX_INTEGRITY_KEY
+    );
+
+    return {
+      amount_in_cents: amountInCents,
+      currency: "COP",
+      reference,
+      integrity_signature,
+      customer_data: {
+        email: customerEmail,
+        full_name: customerName,
+        phone_number: customerPhone,
+      },
+    };
+  }
+
+  static async simulateSandboxPayment(
+    payload: WompiPayload
+  ): Promise<{ status: "APPROVED"; reference: string; message: string }> {
+    await new Promise((r) => setTimeout(r, 1500));
+    return {
+      status: "APPROVED",
+      reference: payload.reference,
+      message: "Pago aprobado en modo sandbox.",
+    };
+  }
+}

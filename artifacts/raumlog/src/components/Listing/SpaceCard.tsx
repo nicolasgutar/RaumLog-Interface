@@ -14,8 +14,16 @@ const CATEGORY_ICONS: Record<string, any> = {
   General: Box, Muebles: Home, Cajas: Package, Vehículos: Car, Electrodomésticos: Tv,
 };
 
+const ACCESS_LABELS: Record<string, string> = {
+  "24/7": "Acceso 24/7",
+  "Con cita": "Acceso con citas programadas",
+  "Por citas": "Acceso con citas programadas",
+  "Solo entrega": "Solo entrega",
+};
+
 export function SpaceCard({ space, onClick }: SpaceCardProps) {
   const Icon = CATEGORY_ICONS[space.category] || Box;
+  const accessLabel = ACCESS_LABELS[space.accessType] || space.accessType;
 
   return (
     <div 
@@ -52,8 +60,8 @@ export function SpaceCard({ space, onClick }: SpaceCardProps) {
           {space.description}
         </p>
         
-        <div className="mt-auto pt-4 border-t border-[#AECBE9]/20 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-[#2C5E8D]/40">
-           <span>{space.accessType}</span>
+        <div className="mt-auto pt-4 border-t border-[#AECBE9]/20 flex justify-between items-center text-[10px] font-semibold uppercase tracking-widest text-[#2C5E8D]/40">
+           <span>{accessLabel}</span>
            <span>{space.category}</span>
         </div>
       </div>
